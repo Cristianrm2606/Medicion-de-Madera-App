@@ -260,7 +260,9 @@
   // Fórmula de la hoja: medida × medida × largo ÷ 4
   const calcular = (a, b) => a * a * b / 4;
   const fmt = n => Number(n.toFixed(2)).toLocaleString('es', { useGrouping: 'always' });
-  const dinero = n => '$' + n.toLocaleString('es', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: 'always' });
+  const moneda = (n, simbolo) =>
+    simbolo + n.toLocaleString('es', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: 'always' });
+  const dinero = n => moneda(n, '₡');
   const $ = id => document.getElementById(id);
 
   // Precio por unidad: de 8 para abajo vale uno, de 9 para arriba vale otro
@@ -623,6 +625,8 @@
   /* ---------- PDF ---------- */
 
   function dibujarPDF(h) {
+    // La letra del PDF no trae el símbolo ₡, se usa ¢ como en los recibos
+    const dinero = n => moneda(n, '¢');
     const doc = new jspdf.jsPDF({ unit: 'mm', format: 'letter' });
     const izq = 15, der = 200, alto = 279;
     const fecha = new Date(h.fecha || Date.now());
