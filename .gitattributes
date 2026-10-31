@@ -1,0 +1,6 @@
+# Librerías de terceros ya minificadas que la app trae para funcionar sin internet.
+# Se marcan como "vendored" para que GitHub no las cuente en la barra de lenguajes.
+app/www/capacitor.js linguist-vendored
+app/www/jspdf.umd.min.js linguist-vendored
+app/www/pdfjs/** linguist-vendored
+app/www/fuentes/** linguist-vendored
