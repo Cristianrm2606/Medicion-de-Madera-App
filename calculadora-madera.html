@@ -2,140 +2,232 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#7a4a1e">
 <title>Hoja de Madera</title>
 <style>
   :root {
-    --bg: #f6f1e9;
-    --card: #ffffff;
-    --text: #2b2118;
-    --muted: #7a6a5a;
-    --accent: #8a5a2b;
-    --accent-text: #ffffff;
-    --line: #e4d9cb;
+    --bg: #f4efe8;
+    --surface: #ffffff;
+    --surface-2: #ece4d9;
+    --text: #231a12;
+    --muted: #806f5f;
+    --line: #e2d7c9;
+    --accent: #7a4a1e;
+    --accent-2: #a8692e;
+    --on-accent: #ffffff;
+    --key: #ffffff;
+    --key-press: #e6dccf;
     --danger: #b3261e;
+    --flash: #fff1d6;
   }
-  * { box-sizing: border-box; }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17120d;
+      --surface: #221b14;
+      --surface-2: #2e251c;
+      --text: #f3ebe1;
+      --muted: #a8988a;
+      --line: #3a3026;
+      --accent: #c98a4b;
+      --accent-2: #e0a568;
+      --on-accent: #1a120a;
+      --key: #2b231b;
+      --key-press: #3a3026;
+      --danger: #ff8a80;
+      --flash: #3d2e1c;
+    }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; margin: 0; }
   body {
-    margin: 0;
     background: var(--bg);
     color: var(--text);
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    font-size: 18px;
   }
-  main { max-width: 560px; margin: 0 auto; padding: 16px; }
-  h1 { font-size: 24px; margin: 4px 0 16px; }
-  .card {
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 16px;
+  button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+
+  .app {
+    max-width: 480px; margin: 0 auto; height: 100dvh;
+    display: flex; flex-direction: column;
   }
-  label { display: block; font-size: 14px; color: var(--muted); margin-bottom: 4px; }
-  input {
-    width: 100%;
-    font-size: 22px;
-    padding: 10px 12px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: #fff;
-    color: var(--text);
+  .vista { display: none; flex: 1; flex-direction: column; min-height: 0; }
+  .vista.activa { display: flex; }
+
+  /* Barra de arriba */
+  .barra {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 12px 16px; background: var(--accent); color: var(--on-accent);
   }
-  .medidas { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: end; }
-  .x { font-size: 26px; padding-bottom: 10px; color: var(--muted); }
-  .preview { margin: 12px 0; font-size: 16px; color: var(--muted); min-height: 22px; }
-  .preview b { color: var(--text); font-size: 20px; }
-  button {
-    font-size: 18px;
-    padding: 12px 16px;
-    border: 0;
-    border-radius: 8px;
-    background: var(--accent);
-    color: var(--accent-text);
-    cursor: pointer;
+  .barra h1 { font-size: 19px; margin: 0; font-weight: 700; }
+  .barra button {
+    color: var(--on-accent); padding: 8px 12px; border-radius: 999px;
+    background: rgba(255,255,255,.16); font-size: 15px; font-weight: 600;
   }
-  button.secundario { background: #efe6da; color: var(--text); }
-  button.borrar { background: transparent; color: var(--danger); padding: 4px 8px; font-size: 20px; }
-  .ancho { width: 100%; }
-  .fila-botones { display: flex; gap: 8px; flex-wrap: wrap; }
-  .fila-botones button { flex: 1; }
-  table { width: 100%; border-collapse: collapse; }
-  th, td { padding: 8px 4px; border-bottom: 1px solid var(--line); text-align: left; }
-  th { font-size: 13px; color: var(--muted); font-weight: 600; }
-  td.num, th.num { text-align: right; }
-  .vacio { color: var(--muted); text-align: center; padding: 16px; }
-  .totales { display: grid; gap: 6px; margin-top: 12px; }
-  .totales div { display: flex; justify-content: space-between; }
-  .grande { font-size: 24px; font-weight: 700; }
-  .historial-item {
-    display: flex; justify-content: space-between; align-items: center; gap: 8px;
-    padding: 10px 0; border-bottom: 1px solid var(--line);
+
+  /* Resumen */
+  .resumen {
+    padding: 14px 16px 12px; background: var(--surface); border-bottom: 1px solid var(--line);
   }
-  .historial-item small { color: var(--muted); display: block; }
+  .proveedor {
+    width: 100%; font-size: 17px; font-weight: 600; color: var(--text);
+    border: 0; border-bottom: 1px dashed var(--line); background: transparent;
+    padding: 4px 0; outline: none;
+  }
+  .proveedor:focus { border-bottom-color: var(--accent); }
+  .proveedor::placeholder { color: var(--muted); font-weight: 400; }
+  .cifras { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 10px; }
+  .cifra small { display: block; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .cifra b { font-size: 30px; font-variant-numeric: tabular-nums; }
+  .cifra.der { text-align: right; }
+  .cifra.der b { font-size: 20px; }
+  .btn-guardar {
+    margin-top: 12px; width: 100%; padding: 12px; border-radius: 10px;
+    background: var(--surface-2); font-weight: 600; font-size: 16px;
+  }
+  .btn-guardar:disabled { opacity: .45; cursor: default; }
+
+  /* Lista de piezas */
+  .lista { flex: 1; overflow-y: auto; min-height: 0; }
+  .pieza {
+    display: grid; grid-template-columns: 34px 1fr auto 40px; align-items: center;
+    padding: 0 8px 0 16px; height: 50px; border-bottom: 1px solid var(--line);
+    font-variant-numeric: tabular-nums;
+  }
+  .pieza.nueva { animation: flash 1.2s ease-out; }
+  @keyframes flash { from { background: var(--flash); } to { background: transparent; } }
+  .pieza .n { color: var(--muted); font-size: 13px; }
+  .pieza .m { font-size: 18px; }
+  .pieza .r { font-size: 18px; font-weight: 700; }
+  .pieza button { color: var(--muted); font-size: 18px; height: 40px; border-radius: 8px; }
+  .pieza button:active { background: var(--surface-2); color: var(--danger); }
+  .vacio { color: var(--muted); text-align: center; padding: 32px 24px; line-height: 1.5; }
+
+  /* Panel de captura */
+  .captura {
+    background: var(--surface); border-top: 1px solid var(--line);
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+    box-shadow: 0 -4px 16px rgba(0,0,0,.06);
+  }
+  .campos { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; }
+  .campo {
+    text-align: left; padding: 6px 12px; border-radius: 10px;
+    border: 2px solid var(--line); background: var(--bg);
+  }
+  .campo.activo { border-color: var(--accent); background: var(--surface); }
+  .campo small { display: block; font-size: 12px; color: var(--muted); }
+  .campo span { display: block; font-size: 26px; font-weight: 700; min-height: 32px; font-variant-numeric: tabular-nums; }
+  .campo span:empty::after { content: "–"; color: var(--line); }
+  .por { font-size: 22px; color: var(--muted); }
+  .formula { text-align: center; color: var(--muted); font-size: 14px; height: 24px; line-height: 24px; }
+  .formula b { color: var(--text); font-size: 16px; }
+
+  .rapidos { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; font-size: 13px; color: var(--muted); }
+  .rapidos button {
+    flex: 1; padding: 6px 0; border-radius: 999px; border: 1px solid var(--line);
+    font-size: 15px; font-weight: 600; color: var(--text);
+  }
+  .rapidos button.sel { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+
+  .teclado { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .teclado button {
+    height: 52px; border-radius: 10px; background: var(--key); border: 1px solid var(--line);
+    font-size: 22px; font-weight: 600;
+  }
+  .teclado button:active { background: var(--key-press); }
+  .teclado .cero { grid-column: span 2; }
+  .teclado .agregar {
+    grid-column: 4; grid-row: 2 / span 3; height: auto;
+    background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-size: 17px;
+  }
+  .teclado .agregar:active { background: var(--accent-2); }
+
+  /* Hojas guardadas */
+  .hoja-guardada {
+    display: flex; align-items: center; gap: 8px; padding: 12px 8px 12px 16px;
+    border-bottom: 1px solid var(--line); background: var(--surface);
+  }
+  .hoja-guardada .info { flex: 1; text-align: left; }
+  .hoja-guardada .info b { display: block; font-size: 17px; }
+  .hoja-guardada .info small { color: var(--muted); font-size: 13px; }
+  .hoja-guardada .tot { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .hoja-guardada .quitar { color: var(--muted); width: 40px; height: 40px; border-radius: 8px; font-size: 18px; }
+
+  /* Aviso con deshacer */
+  .aviso {
+    position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 120px);
+    background: var(--text); color: var(--bg); padding: 12px 16px; border-radius: 10px;
+    display: flex; gap: 16px; align-items: center; font-size: 15px;
+    transition: transform .2s; max-width: calc(100% - 32px); z-index: 10;
+  }
+  .aviso.ver { transform: translate(-50%, 0); }
+  .aviso button { color: var(--accent-2); font-weight: 700; }
+  @media (prefers-color-scheme: dark) { .aviso button { color: var(--accent); } }
 </style>
 </head>
 <body>
-<main>
-  <h1>🪵 Hoja de Madera</h1>
+<div class="app">
 
-  <div class="card">
-    <label for="proveedor">Proveedor</label>
-    <input id="proveedor" type="text" placeholder="Nombre del proveedor">
-  </div>
+  <!-- Vista: hoja actual -->
+  <section class="vista activa" id="vistaHoja">
+    <header class="barra">
+      <h1>🪵 Hoja de Madera</h1>
+      <button id="irGuardadas">Guardadas</button>
+    </header>
 
-  <div class="card">
-    <div class="medidas">
-      <div>
-        <label for="a">Medida</label>
-        <input id="a" type="number" inputmode="decimal" step="any" placeholder="7">
+    <div class="resumen">
+      <input class="proveedor" id="proveedor" placeholder="Proveedor (toca para escribir)" autocomplete="off">
+      <div class="cifras">
+        <div class="cifra"><small>Total</small><b id="total">0</b></div>
+        <div class="cifra der"><small>Piezas</small><b id="piezas">0</b></div>
       </div>
-      <div class="x">×</div>
-      <div>
-        <label for="b">Largo</label>
-        <input id="b" type="number" inputmode="decimal" step="any" placeholder="4">
+      <button class="btn-guardar" id="guardar">Guardar hoja y empezar otra</button>
+    </div>
+
+    <div class="lista" id="lista"></div>
+
+    <div class="captura">
+      <div class="campos">
+        <button class="campo activo" id="campoA"><small>Medida</small><span id="valA"></span></button>
+        <div class="por">×</div>
+        <button class="campo" id="campoB"><small>Largo</small><span id="valB"></span></button>
+      </div>
+      <div class="formula" id="formula"></div>
+      <div class="rapidos">
+        <span>Largo:</span>
+        <button data-largo="3">3</button>
+        <button data-largo="4">4</button>
+        <button data-largo="5">5</button>
+        <button data-largo="6">6</button>
+      </div>
+      <div class="teclado" id="teclado">
+        <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="borrar" aria-label="Borrar">⌫</button>
+        <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+        <button data-k="agregar" class="agregar">Agregar</button>
+        <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+        <button data-k=".">.</button><button data-k="0" class="cero">0</button>
       </div>
     </div>
-    <div class="preview" id="preview"></div>
-    <button class="ancho" id="agregar">Agregar</button>
-  </div>
+  </section>
 
-  <div class="card">
-    <table>
-      <thead>
-        <tr><th>#</th><th>Medida</th><th class="num">Resultado</th><th></th></tr>
-      </thead>
-      <tbody id="filas"></tbody>
-    </table>
+  <!-- Vista: hojas guardadas -->
+  <section class="vista" id="vistaGuardadas">
+    <header class="barra">
+      <h1>Hojas guardadas</h1>
+      <button id="volver">← Volver</button>
+    </header>
+    <div class="lista" id="listaGuardadas"></div>
+  </section>
 
-    <div class="totales">
-      <div><span>Piezas</span><span id="piezas">0</span></div>
-      <div class="grande"><span>Total</span><span id="total">0</span></div>
-      <div>
-        <label for="precio" style="margin:0;align-self:center">Precio por unidad</label>
-        <input id="precio" type="number" inputmode="decimal" step="any" placeholder="0" style="width:140px;font-size:18px">
-      </div>
-      <div class="grande"><span>A pagar</span><span id="pagar">$0.00</span></div>
-    </div>
-  </div>
+</div>
 
-  <div class="fila-botones" style="margin-bottom:16px">
-    <button id="guardar">Guardar hoja</button>
-    <button class="secundario" id="nueva">Hoja nueva</button>
-  </div>
-
-  <div class="card">
-    <h2 style="font-size:18px;margin:0 0 8px">Hojas guardadas</h2>
-    <div id="historial"></div>
-  </div>
-</main>
+<div class="aviso" id="aviso"><span id="avisoTexto"></span><button id="avisoBoton">Deshacer</button></div>
 
 <script>
   // Fórmula de la hoja: medida × medida × largo ÷ 4
-  function calcular(a, b) { return a * a * b / 4; }
-
-  function fmt(n) { return Number(n.toFixed(2)).toLocaleString('es'); }
-  function dinero(n) { return '$' + n.toLocaleString('es', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  const calcular = (a, b) => a * a * b / 4;
+  const fmt = n => Number(n.toFixed(2)).toLocaleString('es');
+  const $ = id => document.getElementById(id);
 
   function leer(clave, porDefecto) {
     try { const v = localStorage.getItem(clave); return v ? JSON.parse(v) : porDefecto; }
@@ -145,129 +237,213 @@
     try { localStorage.setItem(clave, JSON.stringify(valor)); } catch (e) {}
   }
 
-  let hoja = leer('hojaActual', { proveedor: '', precio: '', filas: [] });
-  let historial = leer('historial', []);
+  const hojaVacia = () => ({ id: Date.now(), proveedor: '', filas: [] });
+  let hoja = leer('hojaActual', null) || hojaVacia();
+  if (!hoja.id) hoja.id = Date.now();
+  let guardadas = leer('historial', []);
+  let entrada = { a: '', b: '4' };
+  let campo = 'a';
 
-  const $ = id => document.getElementById(id);
+  const totalDe = h => h.filas.reduce((s, f) => s + calcular(f.a, f.b), 0);
+  const guardarActual = () => escribir('hojaActual', hoja);
 
-  function guardarActual() { escribir('hojaActual', hoja); }
+  /* ---------- Hoja actual ---------- */
 
-  function totalDe(h) { return h.filas.reduce((s, f) => s + calcular(f.a, f.b), 0); }
-
-  function pintar() {
+  function pintarHoja(resaltarUltima) {
     $('proveedor').value = hoja.proveedor;
-    $('precio').value = hoja.precio;
-
-    const tbody = $('filas');
-    tbody.innerHTML = '';
-    if (hoja.filas.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" class="vacio">Todavía no hay piezas</td></tr>';
-    }
-    hoja.filas.forEach((f, i) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML =
-        '<td>' + String(i + 1).padStart(2, '0') + '</td>' +
-        '<td>' + fmt(f.a) + ' × ' + fmt(f.b) + '</td>' +
-        '<td class="num">' + fmt(calcular(f.a, f.b)) + '</td>' +
-        '<td class="num"><button class="borrar" title="Quitar">✕</button></td>';
-      tr.querySelector('button').onclick = () => {
-        hoja.filas.splice(i, 1);
-        guardarActual();
-        pintar();
-      };
-      tbody.appendChild(tr);
-    });
-
-    const total = totalDe(hoja);
+    $('total').textContent = fmt(totalDe(hoja));
     $('piezas').textContent = hoja.filas.length;
-    $('total').textContent = fmt(total);
-    $('pagar').textContent = dinero(total * (parseFloat(hoja.precio) || 0));
+    $('guardar').disabled = hoja.filas.length === 0;
 
-    pintarHistorial();
-  }
-
-  function pintarHistorial() {
-    const cont = $('historial');
-    cont.innerHTML = '';
-    if (historial.length === 0) {
-      cont.innerHTML = '<div class="vacio">No hay hojas guardadas</div>';
+    const lista = $('lista');
+    lista.innerHTML = '';
+    if (hoja.filas.length === 0) {
+      lista.innerHTML = '<div class="vacio">Escribe la medida y el largo con el teclado de abajo y toca <b>Agregar</b>.</div>';
       return;
     }
-    historial.forEach((h, i) => {
-      const div = document.createElement('div');
-      div.className = 'historial-item';
-      div.innerHTML =
-        '<div><b></b><small></small></div>' +
-        '<div class="fila-botones"><button class="secundario">Abrir</button><button class="borrar">✕</button></div>';
-      div.querySelector('b').textContent = h.proveedor || 'Sin proveedor';
-      div.querySelector('small').textContent =
-        h.fecha + ' · ' + h.filas.length + ' piezas · total ' + fmt(totalDe(h));
-      const [abrir, borrar] = div.querySelectorAll('button');
-      abrir.onclick = () => {
-        hoja = { proveedor: h.proveedor, precio: h.precio, filas: h.filas.slice() };
-        guardarActual();
-        pintar();
-        window.scrollTo(0, 0);
-      };
-      borrar.onclick = () => {
-        if (!confirm('¿Borrar esta hoja guardada?')) return;
-        historial.splice(i, 1);
-        escribir('historial', historial);
-        pintarHistorial();
-      };
-      cont.appendChild(div);
+    hoja.filas.forEach((f, i) => {
+      const fila = document.createElement('div');
+      fila.className = 'pieza' + (resaltarUltima && i === hoja.filas.length - 1 ? ' nueva' : '');
+      fila.innerHTML =
+        '<span class="n">' + String(i + 1).padStart(2, '0') + '</span>' +
+        '<span class="m">' + fmt(f.a) + ' × ' + fmt(f.b) + '</span>' +
+        '<span class="r">' + fmt(calcular(f.a, f.b)) + '</span>' +
+        '<button aria-label="Quitar pieza">✕</button>';
+      fila.querySelector('button').onclick = () => quitarPieza(i);
+      lista.appendChild(fila);
+    });
+    if (resaltarUltima) lista.scrollTop = lista.scrollHeight;
+  }
+
+  function quitarPieza(i) {
+    const [quitada] = hoja.filas.splice(i, 1);
+    guardarActual();
+    pintarHoja();
+    avisar('Pieza ' + fmt(quitada.a) + ' × ' + fmt(quitada.b) + ' quitada', () => {
+      hoja.filas.splice(i, 0, quitada);
+      guardarActual();
+      pintarHoja();
     });
   }
 
-  function actualizarPreview() {
-    const a = parseFloat($('a').value), b = parseFloat($('b').value);
-    $('preview').innerHTML = (a > 0 && b > 0)
+  /* ---------- Captura ---------- */
+
+  function pintarEntrada() {
+    $('valA').textContent = entrada.a;
+    $('valB').textContent = entrada.b;
+    $('campoA').classList.toggle('activo', campo === 'a');
+    $('campoB').classList.toggle('activo', campo === 'b');
+    document.querySelectorAll('[data-largo]').forEach(b =>
+      b.classList.toggle('sel', b.dataset.largo === entrada.b));
+    const a = parseFloat(entrada.a), b = parseFloat(entrada.b);
+    $('formula').innerHTML = (a > 0 && b > 0)
       ? fmt(a) + ' × ' + fmt(a) + ' × ' + fmt(b) + ' ÷ 4 = <b>' + fmt(calcular(a, b)) + '</b>'
       : '';
   }
 
-  function agregar() {
-    const a = parseFloat($('a').value), b = parseFloat($('b').value);
-    if (!(a > 0 && b > 0)) { $('a').focus(); return; }
-    hoja.filas.push({ a, b });
-    guardarActual();
-    $('a').value = '';
-    // El largo casi siempre se repite, así que se deja puesto
-    actualizarPreview();
-    pintar();
-    $('a').focus();
+  function tecla(k) {
+    if (k === 'agregar') return agregar();
+    let v = entrada[campo];
+    if (k === 'borrar') v = v.slice(0, -1);
+    else if (k === '.') { if (!v.includes('.')) v = (v || '0') + '.'; }
+    else if (v.length < 6) v = (v === '0' ? '' : v) + k;
+    entrada[campo] = v;
+    pintarEntrada();
   }
 
-  $('a').oninput = actualizarPreview;
-  $('b').oninput = actualizarPreview;
-  $('a').onkeydown = e => { if (e.key === 'Enter') $('b').value ? agregar() : $('b').focus(); };
-  $('b').onkeydown = e => { if (e.key === 'Enter') agregar(); };
-  $('agregar').onclick = agregar;
+  function agregar() {
+    const a = parseFloat(entrada.a), b = parseFloat(entrada.b);
+    if (!(a > 0)) { campo = 'a'; pintarEntrada(); return; }
+    if (!(b > 0)) { campo = 'b'; pintarEntrada(); return; }
+    hoja.filas.push({ a, b });
+    guardarActual();
+    // El largo casi siempre se repite, así que se queda puesto
+    entrada.a = '';
+    campo = 'a';
+    pintarEntrada();
+    pintarHoja(true);
+  }
+
+  $('teclado').onclick = e => { const b = e.target.closest('button'); if (b) tecla(b.dataset.k); };
+  $('campoA').onclick = () => { campo = 'a'; pintarEntrada(); };
+  $('campoB').onclick = () => { campo = 'b'; pintarEntrada(); };
+  document.querySelectorAll('[data-largo]').forEach(b => b.onclick = () => {
+    entrada.b = b.dataset.largo;
+    campo = 'a';
+    pintarEntrada();
+  });
+
+  // Teclado físico (en computadora)
+  document.addEventListener('keydown', e => {
+    if (document.activeElement === $('proveedor')) {
+      if (e.key === 'Enter') $('proveedor').blur();
+      return;
+    }
+    if (!$('vistaHoja').classList.contains('activa')) return;
+    if (/^[0-9]$/.test(e.key)) tecla(e.key);
+    else if (e.key === '.' || e.key === ',') tecla('.');
+    else if (e.key === 'Backspace') tecla('borrar');
+    else if (e.key === 'Enter') { e.preventDefault(); tecla('agregar'); }
+    else if (e.key === 'x' || e.key === '*' || e.key === 'Tab') {
+      e.preventDefault(); campo = campo === 'a' ? 'b' : 'a'; pintarEntrada();
+    }
+  });
 
   $('proveedor').oninput = e => { hoja.proveedor = e.target.value; guardarActual(); };
-  $('precio').oninput = e => { hoja.precio = e.target.value; guardarActual(); pintar(); };
+
+  /* ---------- Guardar y hojas guardadas ---------- */
 
   $('guardar').onclick = () => {
-    if (hoja.filas.length === 0) { alert('La hoja está vacía.'); return; }
-    historial.unshift({
-      proveedor: hoja.proveedor,
-      precio: hoja.precio,
-      filas: hoja.filas.slice(),
-      fecha: new Date().toLocaleString('es')
-    });
-    escribir('historial', historial);
-    pintarHistorial();
-    alert('Hoja guardada.');
-  };
-
-  $('nueva').onclick = () => {
-    if (hoja.filas.length && !confirm('¿Empezar una hoja nueva? Lo que no hayas guardado se pierde.')) return;
-    hoja = { proveedor: '', precio: hoja.precio, filas: [] };
+    if (hoja.filas.length === 0) return;
+    const copia = { ...hoja, filas: hoja.filas.slice(), fecha: new Date().toISOString() };
+    const i = guardadas.findIndex(h => h.id === hoja.id);
+    if (i >= 0) guardadas.splice(i, 1);
+    guardadas.unshift(copia);
+    escribir('historial', guardadas);
+    const anterior = hoja;
+    hoja = hojaVacia();
     guardarActual();
-    pintar();
+    pintarHoja();
+    avisar('Hoja guardada', () => {
+      guardadas = guardadas.filter(h => h.id !== copia.id);
+      escribir('historial', guardadas);
+      hoja = anterior;
+      guardarActual();
+      pintarHoja();
+    });
   };
 
-  pintar();
+  function fechaCorta(iso) {
+    const d = new Date(iso);
+    return isNaN(d) ? iso : d.toLocaleDateString('es', { day: 'numeric', month: 'short' }) +
+      ' · ' + d.toLocaleTimeString('es', { hour: 'numeric', minute: '2-digit' });
+  }
+
+  function pintarGuardadas() {
+    const lista = $('listaGuardadas');
+    lista.innerHTML = '';
+    if (guardadas.length === 0) {
+      lista.innerHTML = '<div class="vacio">Aún no hay hojas guardadas.</div>';
+      return;
+    }
+    guardadas.forEach((h, i) => {
+      const fila = document.createElement('div');
+      fila.className = 'hoja-guardada';
+      fila.innerHTML =
+        '<button class="info"><b></b><small></small></button>' +
+        '<span class="tot"></span>' +
+        '<button class="quitar" aria-label="Borrar hoja">✕</button>';
+      fila.querySelector('b').textContent = h.proveedor || 'Sin proveedor';
+      fila.querySelector('small').textContent = fechaCorta(h.fecha) + ' · ' + h.filas.length + ' piezas';
+      fila.querySelector('.tot').textContent = fmt(totalDe(h));
+      fila.querySelector('.info').onclick = () => abrirGuardada(h);
+      fila.querySelector('.quitar').onclick = () => {
+        guardadas.splice(i, 1);
+        escribir('historial', guardadas);
+        pintarGuardadas();
+        avisar('Hoja borrada', () => {
+          guardadas.splice(i, 0, h);
+          escribir('historial', guardadas);
+          pintarGuardadas();
+        });
+      };
+      lista.appendChild(fila);
+    });
+  }
+
+  function abrirGuardada(h) {
+    if (hoja.filas.length && hoja.id !== h.id &&
+        !confirm('La hoja que estás llenando no está guardada. ¿Abrir esta de todos modos?')) return;
+    hoja = { id: h.id, proveedor: h.proveedor, filas: h.filas.slice() };
+    guardarActual();
+    mostrar('vistaHoja');
+  }
+
+  function mostrar(id) {
+    document.querySelectorAll('.vista').forEach(v => v.classList.toggle('activa', v.id === id));
+    if (id === 'vistaHoja') pintarHoja(); else pintarGuardadas();
+  }
+  $('irGuardadas').onclick = () => mostrar('vistaGuardadas');
+  $('volver').onclick = () => mostrar('vistaHoja');
+
+  /* ---------- Aviso con deshacer ---------- */
+
+  let temporizador, accionDeshacer;
+  function avisar(texto, deshacer) {
+    $('avisoTexto').textContent = texto;
+    accionDeshacer = deshacer;
+    $('aviso').classList.add('ver');
+    clearTimeout(temporizador);
+    temporizador = setTimeout(() => $('aviso').classList.remove('ver'), 4000);
+  }
+  $('avisoBoton').onclick = () => {
+    $('aviso').classList.remove('ver');
+    if (accionDeshacer) accionDeshacer();
+    accionDeshacer = null;
+  };
+
+  pintarEntrada();
+  pintarHoja();
 </script>
 </body>
 </html>
