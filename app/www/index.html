@@ -49,7 +49,8 @@
     }
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; margin: 0; }
+  html, body { height: 100%; margin: 0; overflow-x: hidden; }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   body {
     background: var(--bg);
     color: var(--text);
@@ -73,11 +74,14 @@
     padding: calc(10px + var(--safe-area-inset-top, env(safe-area-inset-top))) 12px 10px 16px;
     background: var(--accent); color: var(--on-accent);
   }
-  .barra h1 { font-size: 18px; margin: 0; font-weight: 700; white-space: nowrap; }
-  .barra-botones { display: flex; gap: 6px; }
+  .barra h1 {
+    font-size: 18px; margin: 0; font-weight: 700; white-space: nowrap;
+    min-width: 0; overflow: hidden; text-overflow: ellipsis;
+  }
+  .barra-botones { display: flex; gap: 6px; flex-shrink: 0; }
   .barra button {
-    color: var(--on-accent); padding: 8px 12px; border-radius: 999px;
-    background: rgba(255,255,255,.16); font-size: 15px; font-weight: 600;
+    flex-shrink: 0; color: var(--on-accent); padding: 8px 12px; border-radius: 999px;
+    background: rgba(255,255,255,.16); font-size: 15px; font-weight: 600; white-space: nowrap;
   }
   .barra button.principal { background: var(--on-accent); color: var(--accent); }
   .barra button:disabled { opacity: .4; cursor: default; }
@@ -95,10 +99,10 @@
   }
   .proveedor:focus { border-bottom-color: var(--accent); }
   .proveedor::placeholder { color: var(--muted); font-weight: 400; }
-  .estado { font-size: 12px; color: var(--muted); margin-top: 4px; display: flex; gap: 8px; align-items: center; }
+  .estado { font-size: 12px; color: var(--muted); margin-top: 4px; display: flex; gap: 10px; align-items: center; white-space: nowrap; }
   .estado:empty { display: none; }
   .estado button { color: var(--accent); font-weight: 700; font-size: 12px; padding: 2px 0; }
-  .totales { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .totales { flex-shrink: 0; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .totales b { display: block; font-size: 17px; color: var(--dinero); }
   .totales span { font-size: 12px; color: var(--muted); }
 
@@ -115,7 +119,8 @@
   .pieza .m { font-size: 19px; font-weight: 600; }
   .pieza .r { font-size: 17px; text-align: right; }
   .pieza .r small { font-size: 11px; color: var(--muted); margin-left: 2px; }
-  .pieza .imp { font-size: 14px; color: var(--dinero); text-align: right; min-width: 74px; }
+  .pieza .imp { font-size: 14px; color: var(--dinero); text-align: right; }
+  .pieza .m, .pieza .r, .pieza .imp { white-space: nowrap; }
   .pieza button {
     width: 36px; height: 36px; border-radius: 50%; justify-self: end;
     background: var(--danger-bg); color: var(--danger); font-size: 15px; font-weight: 700;
@@ -178,6 +183,27 @@
   }
   .teclado .agregar:active { background: var(--accent-2); }
 
+  /* Teléfonos más angostos (p. ej. Samsung con "zoom de pantalla"): todo un poco más compacto */
+  @media (max-width: 380px) {
+    .barra { padding-left: 12px; padding-right: 8px; }
+    .barra h1 { font-size: 16px; }
+    .barra button { padding: 7px 10px; font-size: 14px; }
+    .resumen { padding: 8px 12px; }
+    .pieza { grid-template-columns: 22px 1fr auto auto 34px; gap: 6px; padding: 0 6px 0 10px; height: 48px; }
+    .pieza .m { font-size: 17px; }
+    .pieza .r { font-size: 15px; }
+    .pieza .imp { font-size: 13px; }
+    .pieza button { width: 32px; height: 32px; }
+    .captura { padding-left: 8px; padding-right: 8px; }
+    .valor { font-size: 24px; }
+    .teclado { gap: 5px; }
+    .teclado button { height: 46px; font-size: 20px; }
+    .rapidos { gap: 4px; }
+    .rapidos button { font-size: 14px; }
+    .sumar-zona .suma { grid-template-columns: 1fr 1fr; }
+    .sumar-zona .suma div:last-child { grid-column: span 2; }
+  }
+
   /* Hojas guardadas */
   .sumar-zona { padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--line); }
   .sumar-zona[hidden] { display: none; }
@@ -194,20 +220,45 @@
   .suma small { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
   .suma b { font-size: 18px; }
   .suma .din { color: var(--dinero); }
-  .hoja-guardada {
-    display: flex; align-items: center; gap: 6px; padding: 10px 8px 10px 16px;
-    border-bottom: 1px solid var(--line); background: var(--surface);
-  }
-  .hoja-guardada .info { flex: 1; text-align: left; min-width: 0; }
-  .hoja-guardada .info b { display: block; font-size: 17px; }
+  .hoja-guardada { padding: 12px 12px 12px 16px; border-bottom: 1px solid var(--line); background: var(--surface); }
+  .hg-arriba { display: flex; align-items: flex-start; gap: 8px; }
+  .hoja-guardada .info { flex: 1; min-width: 0; }
+  .hoja-guardada .info b { display: block; font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .hoja-guardada .info small { color: var(--muted); font-size: 13px; }
   .hoja-guardada .info .din { display: block; color: var(--dinero); font-weight: 700; font-size: 16px; margin-top: 2px; }
-  .hoja-guardada .pdf {
-    padding: 8px 10px; border-radius: 8px; background: var(--surface-2); font-size: 14px; font-weight: 600;
-  }
   .hoja-guardada .quitar {
-    width: 36px; height: 36px; border-radius: 50%;
-    background: var(--danger-bg); color: var(--danger); font-size: 15px; font-weight: 700;
+    flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%;
+    background: var(--danger-bg); color: var(--danger); font-size: 14px; font-weight: 700;
+  }
+  .hg-botones { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
+  .hg-botones button {
+    padding: 9px 4px; border-radius: 8px; background: var(--surface-2);
+    font-size: 14px; font-weight: 600; white-space: nowrap;
+  }
+  .hg-botones .abrir { background: var(--accent); color: var(--on-accent); }
+
+  /* Vista previa del PDF (sin descargarlo) */
+  .visor {
+    position: fixed; inset: 0; z-index: 15; background: #5b5148;
+    display: flex; flex-direction: column;
+  }
+  .visor[hidden] { display: none; }
+  .visor .barra h1 { flex: 1; font-size: 16px; overflow: hidden; text-overflow: ellipsis; }
+  .visor .zoom { display: flex; gap: 4px; flex-shrink: 0; }
+  .visor .zoom button { width: 38px; padding: 8px 0; font-size: 17px; }
+  .visor-paginas { flex: 1; overflow: auto; padding: 12px; -webkit-overflow-scrolling: touch; }
+  .visor-paginas canvas {
+    display: block; width: 100%; margin: 0 auto 12px; background: #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,.35);
+  }
+  .visor-paginas .vacio { color: #f3ebe1; }
+  .visor-pie {
+    display: grid; grid-template-columns: 1fr; padding: 10px 12px calc(10px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom)));
+    background: var(--surface);
+  }
+  .visor-pie button {
+    padding: 12px; border-radius: 10px; background: var(--accent); color: var(--on-accent);
+    font-size: 16px; font-weight: 700;
   }
 
   /* Aviso con deshacer */
@@ -316,6 +367,19 @@
     <div class="lista" id="listaGuardadas"></div>
   </section>
 
+</div>
+
+<div class="visor" id="visor" hidden>
+  <header class="barra">
+    <button id="visorCerrar">← Cerrar</button>
+    <h1 id="visorTitulo">Vista previa</h1>
+    <div class="zoom">
+      <button id="zoomMenos" aria-label="Alejar">−</button>
+      <button id="zoomMas" aria-label="Acercar">+</button>
+    </div>
+  </header>
+  <div class="visor-paginas" id="visorPaginas"></div>
+  <div class="visor-pie"><button id="visorEnviar">📤 Enviar o descargar</button></div>
 </div>
 
 <div class="aviso" id="aviso"><span id="avisoTexto"></span><button id="avisoBoton"></button></div>
@@ -475,7 +539,9 @@
     const estado = $('estado');
     estado.innerHTML = '';
     if (hoja.guardada) {
-      estado.innerHTML = '<span>Hoja guardada</span><button id="pdfActual">📄 PDF</button>';
+      estado.innerHTML = '<span>Guardada</span><button id="verActual">👁 Ver PDF</button>' +
+        '<button id="pdfActual">📤 Enviar</button>';
+      $('verActual').onclick = () => verPDF(hoja);
       $('pdfActual').onclick = () => crearPDF(hoja);
     }
 
@@ -656,15 +722,22 @@
       const fila = document.createElement('div');
       fila.className = 'hoja-guardada';
       fila.innerHTML =
-        '<button class="info"><b></b><small></small><span class="din"></span></button>' +
-        '<button class="pdf">📄 PDF</button>' +
-        '<button class="quitar" aria-label="Borrar hoja">✕</button>';
+        '<div class="hg-arriba">' +
+          '<div class="info"><b></b><small></small><span class="din"></span></div>' +
+          '<button class="quitar" aria-label="Borrar hoja">✕</button>' +
+        '</div>' +
+        '<div class="hg-botones">' +
+          '<button class="abrir">Abrir</button>' +
+          '<button class="ver">👁 Ver PDF</button>' +
+          '<button class="enviar">📤 Enviar</button>' +
+        '</div>';
       fila.querySelector('b').textContent = h.proveedor || 'Sin proveedor';
       fila.querySelector('small').textContent =
         fechaCorta(h.fecha) + ' · ' + h.piezas + ' pzs · ' + fmt(h.pulgadas) + ' pulg';
       fila.querySelector('.din').textContent = dinero(h.pagar);
-      fila.querySelector('.info').onclick = () => abrirGuardada(h.id);
-      fila.querySelector('.pdf').onclick = async () => crearPDF(await cargarHoja(h.id));
+      fila.querySelector('.abrir').onclick = () => abrirGuardada(h.id);
+      fila.querySelector('.ver').onclick = async () => verPDF(await cargarHoja(h.id));
+      fila.querySelector('.enviar').onclick = async () => crearPDF(await cargarHoja(h.id));
       fila.querySelector('.quitar').onclick = () => borrarGuardada(h.id);
       lista.appendChild(fila);
     });
@@ -809,7 +882,45 @@
     return doc;
   }
 
-  // El botón PDF abre un menú: WhatsApp, Descargar u otras opciones
+  // Vista previa: dibuja el PDF dentro de la app con pdf.js, sin guardar ningún archivo
+  let hojaDelVisor = null, zoom = 1;
+  async function verPDF(h) {
+    if (!h || h.filas.length === 0) return;
+    hojaDelVisor = h;
+    zoom = 1;
+    $('visorTitulo').textContent = h.proveedor || 'Sin proveedor';
+    const cont = $('visorPaginas');
+    cont.innerHTML = '<div class="vacio">Preparando el PDF…</div>';
+    $('visor').hidden = false;
+    try {
+      if (!window.pdfjsLib) await cargarScript('pdfjs/pdf.min.js');
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdfjs/pdf.worker.min.js';
+      const datos = dibujarPDF(h, await cargarFuentes()).output('arraybuffer');
+      const pdf = await pdfjsLib.getDocument({ data: datos }).promise;
+      cont.innerHTML = '';
+      for (let n = 1; n <= pdf.numPages; n++) {
+        const pagina = await pdf.getPage(n);
+        const vp = pagina.getViewport({ scale: 3 });
+        const lienzo = document.createElement('canvas');
+        lienzo.width = vp.width; lienzo.height = vp.height;
+        cont.appendChild(lienzo);
+        await pagina.render({ canvasContext: lienzo.getContext('2d'), viewport: vp }).promise;
+      }
+      aplicarZoom();
+    } catch (e) {
+      cont.innerHTML = '<div class="vacio">No se pudo mostrar el PDF: ' + (e.message || e) + '</div>';
+    }
+  }
+  function aplicarZoom() {
+    $('visorPaginas').querySelectorAll('canvas').forEach(c => c.style.width = (zoom * 100) + '%');
+  }
+  const cerrarVisor = () => { $('visor').hidden = true; $('visorPaginas').innerHTML = ''; };
+  $('visorCerrar').onclick = cerrarVisor;
+  $('zoomMas').onclick = () => { zoom = Math.min(3, zoom + 0.5); aplicarZoom(); };
+  $('zoomMenos').onclick = () => { zoom = Math.max(1, zoom - 0.5); aplicarZoom(); };
+  $('visorEnviar').onclick = () => crearPDF(hojaDelVisor);
+
+  // El botón Enviar abre un menú: WhatsApp, Descargar u otras opciones
   let hojaDelMenu = null;
   function crearPDF(h) {
     if (!h || h.filas.length === 0) return;
@@ -885,6 +996,7 @@
     const App = registerPlugin('App');
     App.addListener('backButton', () => {
       if (!$('menuPdf').hidden) cerrarMenuPdf();
+      else if (!$('visor').hidden) cerrarVisor();
       else if ($('vistaGuardadas').classList.contains('activa')) mostrar('vistaHoja');
       else App.exitApp();
     });
