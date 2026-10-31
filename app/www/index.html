@@ -624,10 +624,26 @@
 
   /* ---------- PDF ---------- */
 
-  function dibujarPDF(h) {
-    // La letra del PDF no trae el símbolo ₡, se usa ¢ como en los recibos
-    const dinero = n => moneda(n, '¢');
+  // Las letras que trae el PDF no tienen el símbolo ₡, así que se mete DejaVu Sans (letra libre)
+  let fuentes = null;
+  async function cargarFuentes() {
+    if (fuentes) return fuentes;
+    const base64 = async archivo => {
+      const bytes = new Uint8Array(await (await fetch('fuentes/' + archivo)).arrayBuffer());
+      let s = '';
+      for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+      return btoa(s);
+    };
+    fuentes = { normal: await base64('DejaVuSans.ttf'), bold: await base64('DejaVuSans-Bold.ttf') };
+    return fuentes;
+  }
+
+  function dibujarPDF(h, fuentes) {
     const doc = new jspdf.jsPDF({ unit: 'mm', format: 'letter' });
+    doc.addFileToVFS('DejaVuSans.ttf', fuentes.normal);
+    doc.addFont('DejaVuSans.ttf', 'DejaVu', 'normal');
+    doc.addFileToVFS('DejaVuSans-Bold.ttf', fuentes.bold);
+    doc.addFont('DejaVuSans-Bold.ttf', 'DejaVu', 'bold');
     const izq = 15, der = 200, alto = 279;
     const fecha = new Date(h.fecha || Date.now());
     const cols = [
@@ -646,27 +662,28 @@
     }
 
     function encabezado(pagina) {
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(20);
+      doc.setFont('DejaVu', 'bold'); doc.setFontSize(20);
       doc.text('HOJA DE MADERA', izq, 22);
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+      doc.setFont('DejaVu', 'normal'); doc.setFontSize(10);
       doc.text('Fecha: ' + fecha.toLocaleDateString('es', { day: '2-digit', month: '2-digit', year: 'numeric' }) +
         '   Hoja No. ' + h.id + (pagina > 1 ? '   (pág. ' + pagina + ')' : ''), der, 22, { align: 'right' });
 
       doc.setLineWidth(0.4);
       doc.rect(izq, 28, der - izq, 10);
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+      doc.setFont('DejaVu', 'bold'); doc.setFontSize(10);
       doc.text('PROVEEDOR:', izq + 3, 34.5);
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(12);
-      doc.text(h.proveedor || '', izq + 30, 34.5);
+      const xNombre = izq + 3 + doc.getTextWidth('PROVEEDOR:') + 3;
+      doc.setFont('DejaVu', 'normal'); doc.setFontSize(12);
+      doc.text(h.proveedor || '', xNombre, 34.5);
 
       y = 44;
       doc.setFillColor(235, 228, 218);
       doc.rect(izq, y, der - izq, fila, 'FD');
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+      doc.setFont('DejaVu', 'bold'); doc.setFontSize(9);
       cols.forEach(c => texto(c.t, c, y + 5.5));
       cols.slice(1).forEach(c => doc.line(c.x, y, c.x, y + fila));
       y += fila;
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(11);
+      doc.setFont('DejaVu', 'normal'); doc.setFontSize(11);
     }
 
     let pagina = 1;
@@ -705,14 +722,15 @@
     doc.setFontSize(10);
     doc.text('Piezas: ' + h.filas.length, cajaX + 3, cajaY + 1);
     doc.text('Total: ' + fmt(totalDe(h)), der - 3, cajaY + 1, { align: 'right' });
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-    doc.text('TOTAL A PAGAR:', cajaX + 3, cajaY + 12);
-    doc.text(dinero(pagarDe(h)), der - 3, cajaY + 12, { align: 'right' });
+    doc.setFont('DejaVu', 'bold'); doc.setFontSize(10);
+    doc.text('A PAGAR:', cajaX + 3, cajaY + 12);
+    doc.setFontSize(15);
+    doc.text(dinero(pagarDe(h)), der - 3, cajaY + 12.5, { align: 'right' });
 
     // Firmas
     const yf = Math.max(y + 30, cajaY + 45);
     if (yf < alto - 5) {
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setLineWidth(0.2);
+      doc.setFont('DejaVu', 'normal'); doc.setFontSize(9); doc.setLineWidth(0.2);
       doc.line(izq + 5, yf, izq + 75, yf);
       doc.line(der - 75, yf, der - 5, yf);
       doc.text('Recibió', izq + 40, yf + 5, { align: 'center' });
@@ -723,7 +741,7 @@
 
   async function crearPDF(h) {
     if (!h || h.filas.length === 0) return;
-    const doc = dibujarPDF(h);
+    const doc = dibujarPDF(h, await cargarFuentes());
     const nombre = ('Hoja ' + h.id + ' ' + (h.proveedor || 'sin proveedor'))
       .replace(/[^\wáéíóúñÁÉÍÓÚÑ ]+/g, '').trim().replace(/\s+/g, '_') + '.pdf';
     if (!esNativo) { doc.save(nombre); return; }
