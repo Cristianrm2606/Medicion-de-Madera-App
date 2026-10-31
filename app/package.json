@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@capacitor/cli": "^8.6.0",
-    "dejavu-fonts-ttf": "^2.37.3"
+    "dejavu-fonts-ttf": "^2.37.3",
+    "sharp": "^0.34.5"
   }
 }

@@ -6,3 +6,6 @@ node_modules/
 
 # Configuración local del editor
 .claude/
+
+# Vista previa que genera recursos/hacer-iconos.js
+app/recursos/vista-iconos.png
