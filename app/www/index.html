@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#7a4a1e">
+<title>Hoja de Madera</title>
+<style>
+  :root {
+    --bg: #f4efe8;
+    --surface: #ffffff;
+    --surface-2: #ece4d9;
+    --text: #231a12;
+    --muted: #806f5f;
+    --line: #e2d7c9;
+    --accent: #7a4a1e;
+    --accent-2: #a8692e;
+    --on-accent: #ffffff;
+    --key: #ffffff;
+    --key-press: #e6dccf;
+    --danger: #b3261e;
+    --flash: #fff1d6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17120d;
+      --surface: #221b14;
+      --surface-2: #2e251c;
+      --text: #f3ebe1;
+      --muted: #a8988a;
+      --line: #3a3026;
+      --accent: #c98a4b;
+      --accent-2: #e0a568;
+      --on-accent: #1a120a;
+      --key: #2b231b;
+      --key-press: #3a3026;
+      --danger: #ff8a80;
+      --flash: #3d2e1c;
+    }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    user-select: none;
+  }
+  input { user-select: text; }
+  button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+
+  .app {
+    max-width: 480px; margin: 0 auto; height: 100dvh;
+    display: flex; flex-direction: column;
+  }
+  .vista { display: none; flex: 1; flex-direction: column; min-height: 0; }
+  .vista.activa { display: flex; }
+  .cargando { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--muted); }
+
+  /* Barra de arriba */
+  .barra {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: calc(12px + var(--safe-area-inset-top, env(safe-area-inset-top))) 16px 12px;
+    background: var(--accent); color: var(--on-accent);
+  }
+  .barra h1 { font-size: 19px; margin: 0; font-weight: 700; }
+  .barra button {
+    color: var(--on-accent); padding: 8px 12px; border-radius: 999px;
+    background: rgba(255,255,255,.16); font-size: 15px; font-weight: 600;
+  }
+
+  /* Resumen */
+  .resumen {
+    padding: 14px 16px 12px; background: var(--surface); border-bottom: 1px solid var(--line);
+  }
+  .proveedor {
+    width: 100%; font-size: 17px; font-weight: 600; color: var(--text);
+    border: 0; border-bottom: 1px dashed var(--line); background: transparent;
+    padding: 4px 0; outline: none;
+  }
+  .proveedor:focus { border-bottom-color: var(--accent); }
+  .proveedor::placeholder { color: var(--muted); font-weight: 400; }
+  .estado { font-size: 12px; color: var(--muted); margin-top: 4px; min-height: 15px; }
+  .cifras { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 6px; }
+  .cifra small { display: block; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .cifra b { font-size: 30px; font-variant-numeric: tabular-nums; }
+  .cifra.der { text-align: right; }
+  .cifra.der b { font-size: 20px; }
+  .btn-guardar {
+    margin-top: 12px; width: 100%; padding: 12px; border-radius: 10px;
+    background: var(--surface-2); font-weight: 600; font-size: 16px;
+  }
+  .btn-guardar:disabled { opacity: .45; cursor: default; }
+
+  /* Lista de piezas */
+  .lista { flex: 1; overflow-y: auto; min-height: 0; }
+  .pieza {
+    display: grid; grid-template-columns: 34px 1fr auto 40px; align-items: center;
+    padding: 0 8px 0 16px; height: 50px; border-bottom: 1px solid var(--line);
+    font-variant-numeric: tabular-nums;
+  }
+  .pieza.nueva { animation: flash 1.2s ease-out; }
+  @keyframes flash { from { background: var(--flash); } to { background: transparent; } }
+  .pieza .n { color: var(--muted); font-size: 13px; }
+  .pieza .m { font-size: 18px; }
+  .pieza .r { font-size: 18px; font-weight: 700; }
+  .pieza button { color: var(--muted); font-size: 18px; height: 40px; border-radius: 8px; }
+  .pieza button:active { background: var(--surface-2); color: var(--danger); }
+  .vacio { color: var(--muted); text-align: center; padding: 32px 24px; line-height: 1.5; }
+
+  /* Panel de captura */
+  .captura {
+    background: var(--surface); border-top: 1px solid var(--line);
+    padding: 10px 12px calc(10px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom)));
+    box-shadow: 0 -4px 16px rgba(0,0,0,.06);
+  }
+  .campos { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; }
+  .campo {
+    text-align: left; padding: 6px 12px; border-radius: 10px;
+    border: 2px solid var(--line); background: var(--bg);
+  }
+  .campo.activo { border-color: var(--accent); background: var(--surface); }
+  .campo small { display: block; font-size: 12px; color: var(--muted); }
+  .campo span { display: block; font-size: 26px; font-weight: 700; min-height: 32px; font-variant-numeric: tabular-nums; }
+  .campo span:empty::after { content: "–"; color: var(--line); }
+  .por { font-size: 22px; color: var(--muted); }
+  .formula { text-align: center; color: var(--muted); font-size: 14px; height: 24px; line-height: 24px; }
+  .formula b { color: var(--text); font-size: 16px; }
+
+  .rapidos { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; font-size: 13px; color: var(--muted); }
+  .rapidos button {
+    flex: 1; padding: 6px 0; border-radius: 999px; border: 1px solid var(--line);
+    font-size: 15px; font-weight: 600; color: var(--text);
+  }
+  .rapidos button.sel { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+
+  .teclado { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .teclado button {
+    height: 52px; border-radius: 10px; background: var(--key); border: 1px solid var(--line);
+    font-size: 22px; font-weight: 600;
+  }
+  .teclado button:active { background: var(--key-press); }
+  .teclado .cero { grid-column: span 2; }
+  .teclado .agregar {
+    grid-column: 4; grid-row: 2 / span 3; height: auto;
+    background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-size: 17px;
+  }
+  .teclado .agregar:active { background: var(--accent-2); }
+
+  /* Hojas guardadas */
+  .hoja-guardada {
+    display: flex; align-items: center; gap: 8px; padding: 12px 8px 12px 16px;
+    border-bottom: 1px solid var(--line); background: var(--surface);
+  }
+  .hoja-guardada .info { flex: 1; text-align: left; }
+  .hoja-guardada .info b { display: block; font-size: 17px; }
+  .hoja-guardada .info small { color: var(--muted); font-size: 13px; }
+  .hoja-guardada .tot { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .hoja-guardada .quitar { color: var(--muted); width: 40px; height: 40px; border-radius: 8px; font-size: 18px; }
+
+  /* Aviso con deshacer */
+  .aviso {
+    position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 120px);
+    background: var(--text); color: var(--bg); padding: 12px 16px; border-radius: 10px;
+    display: flex; gap: 16px; align-items: center; font-size: 15px;
+    transition: transform .2s; max-width: calc(100% - 32px); z-index: 10;
+  }
+  .aviso.ver { transform: translate(-50%, 0); }
+  .aviso button { color: var(--accent-2); font-weight: 700; }
+  @media (prefers-color-scheme: dark) { .aviso button { color: var(--accent); } }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="cargando" id="cargando">Abriendo…</div>
+
+  <!-- Vista: hoja actual -->
+  <section class="vista" id="vistaHoja">
+    <header class="barra">
+      <h1>🪵 Hoja de Madera</h1>
+      <button id="irGuardadas">Guardadas</button>
+    </header>
+
+    <div class="resumen">
+      <input class="proveedor" id="proveedor" placeholder="Proveedor (toca para escribir)" autocomplete="off">
+      <div class="estado" id="estado"></div>
+      <div class="cifras">
+        <div class="cifra"><small>Total</small><b id="total">0</b></div>
+        <div class="cifra der"><small>Piezas</small><b id="piezas">0</b></div>
+      </div>
+      <button class="btn-guardar" id="guardar">Guardar hoja y empezar otra</button>
+    </div>
+
+    <div class="lista" id="lista"></div>
+
+    <div class="captura">
+      <div class="campos">
+        <button class="campo activo" id="campoA"><small>Medida</small><span id="valA"></span></button>
+        <div class="por">×</div>
+        <button class="campo" id="campoB"><small>Largo</small><span id="valB"></span></button>
+      </div>
+      <div class="formula" id="formula"></div>
+      <div class="rapidos">
+        <span>Largo:</span>
+        <button data-largo="3">3</button>
+        <button data-largo="4">4</button>
+        <button data-largo="5">5</button>
+        <button data-largo="6">6</button>
+      </div>
+      <div class="teclado" id="teclado">
+        <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="borrar" aria-label="Borrar">⌫</button>
+        <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+        <button data-k="agregar" class="agregar">Agregar</button>
+        <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+        <button data-k=".">.</button><button data-k="0" class="cero">0</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Vista: hojas guardadas -->
+  <section class="vista" id="vistaGuardadas">
+    <header class="barra">
+      <h1>Hojas guardadas</h1>
+      <button id="volver">← Volver</button>
+    </header>
+    <div class="lista" id="listaGuardadas"></div>
+  </section>
+
+</div>
+
+<div class="aviso" id="aviso"><span id="avisoTexto"></span><button id="avisoBoton">Deshacer</button></div>
+
+<script src="capacitor.js"></script>
+<script>
+  const { Capacitor, registerPlugin } = capacitorExports;
+  const esNativo = Capacitor.isNativePlatform();
+
+  // Fórmula de la hoja: medida × medida × largo ÷ 4
+  const calcular = (a, b) => a * a * b / 4;
+  const fmt = n => Number(n.toFixed(2)).toLocaleString('es');
+  const $ = id => document.getElementById(id);
+
+  /* ---------- Base de datos SQLite ---------- */
+
+  const BD = 'madera';
+  let consulta, ejecutar;
+
+  function cargarScript(src) {
+    return new Promise((ok, mal) => {
+      const s = document.createElement('script');
+      s.src = src; s.onload = ok; s.onerror = mal;
+      document.head.appendChild(s);
+    });
+  }
+
+  async function abrirBase() {
+    if (esNativo) {
+      // En el teléfono: SQLite de Android, guardado en el aparato
+      const S = registerPlugin('CapacitorSQLite');
+      try {
+        await S.createConnection({ database: BD, version: 1, encrypted: false, mode: 'no-encryption', readonly: false });
+      } catch (e) { /* la conexión ya existía */ }
+      await S.open({ database: BD, readonly: false });
+      consulta = async (sql, v = []) =>
+        (await S.query({ database: BD, statement: sql, values: v, readonly: false })).values || [];
+      ejecutar = async (sql, v = []) =>
+        (await S.run({ database: BD, statement: sql, values: v, transaction: true, readonly: false })).changes.lastId;
+    } else {
+      // En la computadora (solo para probar): SQLite en memoria con sql.js
+      const cdn = 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/';
+      await cargarScript(cdn + 'sql-wasm.js');
+      const SQL = await initSqlJs({ locateFile: f => cdn + f });
+      const base = new SQL.Database();
+      consulta = async (sql, v = []) => {
+        const st = base.prepare(sql);
+        st.bind(v);
+        const filas = [];
+        while (st.step()) filas.push(st.getAsObject());
+        st.free();
+        return filas;
+      };
+      ejecutar = async (sql, v = []) => {
+        base.run(sql, v);
+        return base.exec('SELECT last_insert_rowid()')[0].values[0][0];
+      };
+    }
+
+    await ejecutar(`CREATE TABLE IF NOT EXISTS hojas (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      proveedor TEXT NOT NULL DEFAULT '',
+      fecha TEXT,
+      guardada INTEGER NOT NULL DEFAULT 0
+    )`);
+    await ejecutar(`CREATE TABLE IF NOT EXISTS piezas (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      hoja_id INTEGER NOT NULL,
+      medida REAL NOT NULL,
+      largo REAL NOT NULL
+    )`);
+    await ejecutar('CREATE TABLE IF NOT EXISTS ajustes (clave TEXT PRIMARY KEY, valor TEXT)');
+  }
+
+  async function leerAjuste(clave) {
+    const f = await consulta('SELECT valor FROM ajustes WHERE clave = ?', [clave]);
+    return f.length ? f[0].valor : null;
+  }
+  const fijarAjuste = (clave, valor) =>
+    ejecutar('INSERT OR REPLACE INTO ajustes (clave, valor) VALUES (?, ?)', [clave, String(valor)]);
+
+  async function cargarHoja(id) {
+    const h = (await consulta('SELECT id, proveedor, fecha, guardada FROM hojas WHERE id = ?', [id]))[0];
+    if (!h) return null;
+    const filas = await consulta('SELECT id, medida AS a, largo AS b FROM piezas WHERE hoja_id = ? ORDER BY id', [id]);
+    return { id: h.id, proveedor: h.proveedor, fecha: h.fecha, guardada: !!h.guardada, filas };
+  }
+
+  async function crearHoja() {
+    const id = await ejecutar("INSERT INTO hojas (proveedor) VALUES ('')");
+    await fijarAjuste('hoja_actual', id);
+    return { id, proveedor: '', fecha: null, guardada: false, filas: [] };
+  }
+
+  async function borrarHojaDeBase(id) {
+    await ejecutar('DELETE FROM piezas WHERE hoja_id = ?', [id]);
+    await ejecutar('DELETE FROM hojas WHERE id = ?', [id]);
+  }
+
+  async function restaurarHoja(h) {
+    await ejecutar('INSERT INTO hojas (id, proveedor, fecha, guardada) VALUES (?, ?, ?, ?)',
+      [h.id, h.proveedor, h.fecha, h.guardada ? 1 : 0]);
+    for (const f of h.filas)
+      await ejecutar('INSERT INTO piezas (id, hoja_id, medida, largo) VALUES (?, ?, ?, ?)', [f.id, h.id, f.a, f.b]);
+  }
+
+  /* ---------- Hoja actual ---------- */
+
+  let hoja;
+  let entrada = { a: '', b: '4' };
+  let campo = 'a';
+
+  const totalDe = h => h.filas.reduce((s, f) => s + calcular(f.a, f.b), 0);
+
+  function pintarHoja(resaltarUltima) {
+    $('proveedor').value = hoja.proveedor;
+    $('estado').textContent = hoja.guardada ? 'Hoja guardada · los cambios se guardan solos' : '';
+    $('total').textContent = fmt(totalDe(hoja));
+    $('piezas').textContent = hoja.filas.length;
+    $('guardar').disabled = hoja.filas.length === 0;
+    $('guardar').textContent = hoja.guardada ? 'Listo, empezar otra hoja' : 'Guardar hoja y empezar otra';
+
+    const lista = $('lista');
+    lista.innerHTML = '';
+    if (hoja.filas.length === 0) {
+      lista.innerHTML = '<div class="vacio">Escribe la medida y el largo con el teclado de abajo y toca <b>Agregar</b>.</div>';
+      return;
+    }
+    hoja.filas.forEach((f, i) => {
+      const fila = document.createElement('div');
+      fila.className = 'pieza' + (resaltarUltima && i === hoja.filas.length - 1 ? ' nueva' : '');
+      fila.innerHTML =
+        '<span class="n">' + String(i + 1).padStart(2, '0') + '</span>' +
+        '<span class="m">' + fmt(f.a) + ' × ' + fmt(f.b) + '</span>' +
+        '<span class="r">' + fmt(calcular(f.a, f.b)) + '</span>' +
+        '<button aria-label="Quitar pieza">✕</button>';
+      fila.querySelector('button').onclick = () => quitarPieza(i);
+      lista.appendChild(fila);
+    });
+    if (resaltarUltima) lista.scrollTop = lista.scrollHeight;
+  }
+
+  async function quitarPieza(i) {
+    const [quitada] = hoja.filas.splice(i, 1);
+    pintarHoja();
+    await ejecutar('DELETE FROM piezas WHERE id = ?', [quitada.id]);
+    const h = hoja;
+    avisar('Pieza ' + fmt(quitada.a) + ' × ' + fmt(quitada.b) + ' quitada', async () => {
+      await ejecutar('INSERT INTO piezas (id, hoja_id, medida, largo) VALUES (?, ?, ?, ?)',
+        [quitada.id, h.id, quitada.a, quitada.b]);
+      h.filas.splice(i, 0, quitada);
+      if (h === hoja) pintarHoja();
+    });
+  }
+
+  /* ---------- Captura ---------- */
+
+  function pintarEntrada() {
+    $('valA').textContent = entrada.a;
+    $('valB').textContent = entrada.b;
+    $('campoA').classList.toggle('activo', campo === 'a');
+    $('campoB').classList.toggle('activo', campo === 'b');
+    document.querySelectorAll('[data-largo]').forEach(b =>
+      b.classList.toggle('sel', b.dataset.largo === entrada.b));
+    const a = parseFloat(entrada.a), b = parseFloat(entrada.b);
+    $('formula').innerHTML = (a > 0 && b > 0)
+      ? fmt(a) + ' × ' + fmt(a) + ' × ' + fmt(b) + ' ÷ 4 = <b>' + fmt(calcular(a, b)) + '</b>'
+      : '';
+  }
+
+  function tecla(k) {
+    if (k === 'agregar') return agregar();
+    let v = entrada[campo];
+    if (k === 'borrar') v = v.slice(0, -1);
+    else if (k === '.') { if (!v.includes('.')) v = (v || '0') + '.'; }
+    else if (v.length < 6) v = (v === '0' ? '' : v) + k;
+    entrada[campo] = v;
+    pintarEntrada();
+  }
+
+  async function agregar() {
+    const a = parseFloat(entrada.a), b = parseFloat(entrada.b);
+    if (!(a > 0)) { campo = 'a'; pintarEntrada(); return; }
+    if (!(b > 0)) { campo = 'b'; pintarEntrada(); return; }
+    // El largo casi siempre se repite, así que se queda puesto
+    entrada.a = '';
+    campo = 'a';
+    pintarEntrada();
+    const id = await ejecutar('INSERT INTO piezas (hoja_id, medida, largo) VALUES (?, ?, ?)', [hoja.id, a, b]);
+    hoja.filas.push({ id, a, b });
+    pintarHoja(true);
+  }
+
+  $('teclado').onclick = e => { const b = e.target.closest('button'); if (b) tecla(b.dataset.k); };
+  $('campoA').onclick = () => { campo = 'a'; pintarEntrada(); };
+  $('campoB').onclick = () => { campo = 'b'; pintarEntrada(); };
+  document.querySelectorAll('[data-largo]').forEach(b => b.onclick = () => {
+    entrada.b = b.dataset.largo;
+    campo = 'a';
+    pintarEntrada();
+  });
+
+  // Teclado físico (en computadora)
+  document.addEventListener('keydown', e => {
+    if (document.activeElement === $('proveedor')) {
+      if (e.key === 'Enter') $('proveedor').blur();
+      return;
+    }
+    if (!$('vistaHoja').classList.contains('activa')) return;
+    if (/^[0-9]$/.test(e.key)) tecla(e.key);
+    else if (e.key === '.' || e.key === ',') tecla('.');
+    else if (e.key === 'Backspace') tecla('borrar');
+    else if (e.key === 'Enter') { e.preventDefault(); tecla('agregar'); }
+    else if (e.key === 'x' || e.key === '*' || e.key === 'Tab') {
+      e.preventDefault(); campo = campo === 'a' ? 'b' : 'a'; pintarEntrada();
+    }
+  });
+
+  $('proveedor').oninput = e => {
+    hoja.proveedor = e.target.value;
+    ejecutar('UPDATE hojas SET proveedor = ? WHERE id = ?', [hoja.proveedor, hoja.id]);
+  };
+
+  /* ---------- Guardar y hojas guardadas ---------- */
+
+  $('guardar').onclick = async () => {
+    if (hoja.filas.length === 0) return;
+    const anterior = hoja;
+    const yaEstabaGuardada = anterior.guardada;
+    if (!yaEstabaGuardada) {
+      anterior.fecha = new Date().toISOString();
+      anterior.guardada = true;
+      await ejecutar('UPDATE hojas SET guardada = 1, fecha = ? WHERE id = ?', [anterior.fecha, anterior.id]);
+    }
+    hoja = await crearHoja();
+    pintarHoja();
+    const nueva = hoja;
+    avisar(yaEstabaGuardada ? 'Listo' : 'Hoja guardada', async () => {
+      await borrarHojaDeBase(nueva.id);
+      if (!yaEstabaGuardada) {
+        anterior.guardada = false;
+        anterior.fecha = null;
+        await ejecutar('UPDATE hojas SET guardada = 0, fecha = NULL WHERE id = ?', [anterior.id]);
+      }
+      await fijarAjuste('hoja_actual', anterior.id);
+      hoja = anterior;
+      pintarHoja();
+    });
+  };
+
+  function fechaCorta(iso) {
+    const d = new Date(iso);
+    return isNaN(d) ? '' : d.toLocaleDateString('es', { day: 'numeric', month: 'short' }) +
+      ' · ' + d.toLocaleTimeString('es', { hour: 'numeric', minute: '2-digit' });
+  }
+
+  async function pintarGuardadas() {
+    const guardadas = await consulta(`
+      SELECT h.id, h.proveedor, h.fecha,
+             COUNT(p.id) AS piezas,
+             COALESCE(SUM(p.medida * p.medida * p.largo / 4), 0) AS total
+      FROM hojas h LEFT JOIN piezas p ON p.hoja_id = h.id
+      WHERE h.guardada = 1
+      GROUP BY h.id
+      ORDER BY h.fecha DESC`);
+    const lista = $('listaGuardadas');
+    lista.innerHTML = '';
+    if (guardadas.length === 0) {
+      lista.innerHTML = '<div class="vacio">Aún no hay hojas guardadas.</div>';
+      return;
+    }
+    guardadas.forEach(h => {
+      const fila = document.createElement('div');
+      fila.className = 'hoja-guardada';
+      fila.innerHTML =
+        '<button class="info"><b></b><small></small></button>' +
+        '<span class="tot"></span>' +
+        '<button class="quitar" aria-label="Borrar hoja">✕</button>';
+      fila.querySelector('b').textContent = h.proveedor || 'Sin proveedor';
+      fila.querySelector('small').textContent = fechaCorta(h.fecha) + ' · ' + h.piezas + ' piezas';
+      fila.querySelector('.tot').textContent = fmt(h.total);
+      fila.querySelector('.info').onclick = () => abrirGuardada(h.id);
+      fila.querySelector('.quitar').onclick = () => borrarGuardada(h.id);
+      lista.appendChild(fila);
+    });
+  }
+
+  async function borrarGuardada(id) {
+    const completa = await cargarHoja(id);
+    await borrarHojaDeBase(id);
+    if (hoja.id === id) hoja = await crearHoja();
+    await pintarGuardadas();
+    avisar('Hoja borrada', async () => {
+      await restaurarHoja(completa);
+      await pintarGuardadas();
+    });
+  }
+
+  async function abrirGuardada(id) {
+    if (hoja.id !== id && !hoja.guardada) {
+      if (hoja.filas.length &&
+          !confirm('La hoja que estás llenando no está guardada y se va a perder. ¿Abrir esta de todos modos?')) return;
+      await borrarHojaDeBase(hoja.id);
+    }
+    await fijarAjuste('hoja_actual', id);
+    hoja = await cargarHoja(id);
+    mostrar('vistaHoja');
+  }
+
+  function mostrar(id) {
+    document.querySelectorAll('.vista').forEach(v => v.classList.toggle('activa', v.id === id));
+    if (id === 'vistaHoja') pintarHoja(); else pintarGuardadas();
+  }
+  $('irGuardadas').onclick = () => mostrar('vistaGuardadas');
+  $('volver').onclick = () => mostrar('vistaHoja');
+
+  /* ---------- Aviso con deshacer ---------- */
+
+  let temporizador, accionDeshacer;
+  function avisar(texto, deshacer) {
+    $('avisoTexto').textContent = texto;
+    accionDeshacer = deshacer;
+    $('aviso').classList.add('ver');
+    clearTimeout(temporizador);
+    temporizador = setTimeout(() => { $('aviso').classList.remove('ver'); accionDeshacer = null; }, 4000);
+  }
+  $('avisoBoton').onclick = () => {
+    $('aviso').classList.remove('ver');
+    if (accionDeshacer) accionDeshacer();
+    accionDeshacer = null;
+  };
+
+  /* ---------- Arranque ---------- */
+
+  if (esNativo) {
+    // Botón "atrás" de Android: de Guardadas regresa a la hoja; desde la hoja sale de la app
+    const App = registerPlugin('App');
+    App.addListener('backButton', () => {
+      if ($('vistaGuardadas').classList.contains('activa')) mostrar('vistaHoja');
+      else App.exitApp();
+    });
+  }
+
+  (async () => {
+    try {
+      await abrirBase();
+      const id = await leerAjuste('hoja_actual');
+      hoja = (id && await cargarHoja(Number(id))) || await crearHoja();
+      $('cargando').remove();
+      pintarEntrada();
+      mostrar('vistaHoja');
+    } catch (e) {
+      $('cargando').textContent = 'No se pudo abrir la base de datos: ' + (e.message || e);
+    }
+  })();
+</script>
+</body>
+</html>

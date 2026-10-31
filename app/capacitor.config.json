@@ -1,0 +1,9 @@
+﻿{
+  "appId": "com.madera.hoja",
+  "appName": "Hoja de Madera",
+  "webDir": "www",
+  "plugins": {
+    "CapacitorSQLite": { "androidIsEncryption": false },
+    "SystemBars": { "style": "DARK" }
+  }
+}
