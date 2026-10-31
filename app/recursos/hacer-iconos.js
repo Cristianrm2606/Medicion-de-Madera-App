@@ -5,12 +5,14 @@ const path = require('path');
 
 const original = path.join(__dirname, 'icono-original.webp');
 const res = path.join(__dirname, '..', 'android', 'app', 'src', 'main', 'res');
-const FONDO = '#191715';
+const FONDO = '#14301d';
 
-// Medidas del dibujo original (1254 px): el borde naranja va de 55 a 1199 con esquinas de radio ~239,
-// y la parte oscura de adentro va de 92 a 1162 (se recorta un poco más para no agarrar la orilla naranja)
-const borde = { x: 55, lado: 1144, radio: 239 };
-const adentro = { x: 104, lado: 1046, radio: 190 };
+// Medidas del dibujo original (1254 px): el borde verde va de 31 a 1221 con esquinas de radio ~250,
+// y el paisaje de adentro va de ~62 a ~1192 (se recorta un poco más para no agarrar la orilla verde)
+const borde = { x: 31, lado: 1191, radio: 250 };
+const adentro = { x: 72, lado: 1110, radio: 190 };
+// Tamaño del dibujo dentro de la capa de 108dp: el paisaje llena casi todo, sin cortar la cinta en los íconos redondos
+const ESCALA = 70;
 
 const densidades = { mdpi: 1, hdpi: 1.5, xhdpi: 2, xxhdpi: 3, xxxhdpi: 4 };
 
@@ -29,22 +31,22 @@ async function recortar({ x, lado, radio }) {
 }
 
 (async () => {
-  const completo = await recortar(borde);   // con el borde naranja, para Android viejo
-  const dibujo = await recortar(adentro);   // solo la cinta y la madera, para el ícono adaptable
+  const completo = await recortar(borde);   // con el borde verde, para Android viejo
+  const dibujo = await recortar(adentro);   // solo el paisaje, para el ícono adaptable
 
   for (const [nombre, d] of Object.entries(densidades)) {
     const carpeta = path.join(res, 'mipmap-' + nombre);
 
     // Ícono adaptable (Android 8+): capa de 108dp; lo que se ve seguro es el centro de ~66dp
     const capa = Math.round(108 * d);
-    const tam = Math.round(capa * 64 / 108);
+    const tam = Math.round(capa * ESCALA / 108);
     const centro = Math.round((capa - tam) / 2);
     const frente = await sharp({ create: { width: capa, height: capa, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
       .composite([{ input: await sharp(dibujo).resize(tam, tam).toBuffer(), left: centro, top: centro }])
       .png().toBuffer();
     await sharp(frente).toFile(path.join(carpeta, 'ic_launcher_foreground.png'));
 
-    // Íconos de Android viejo (48dp): cuadrado redondeado con borde naranja, y versión redonda
+    // Íconos de Android viejo (48dp): cuadrado redondeado con borde verde, y versión redonda
     const lado = Math.round(48 * d);
     await sharp(completo).resize(lado, lado).toFile(path.join(carpeta, 'ic_launcher.png'));
     const redondo = await sharp({ create: { width: capa, height: capa, channels: 4, background: FONDO } })
