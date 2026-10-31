@@ -211,8 +211,15 @@
     width: 100%; padding: 12px; border-radius: 10px; font-size: 16px; font-weight: 700;
     background: var(--surface-2);
   }
+  .sumar-botones { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .btn-sumar.activo { background: var(--accent); color: var(--on-accent); }
+  .suma-titulo {
+    display: flex; justify-content: space-between; align-items: center; margin-top: 10px;
+    font-size: 13px; font-weight: 700; color: var(--muted);
+  }
+  .suma-titulo button { color: var(--muted); font-size: 16px; padding: 2px 6px; }
   .suma {
-    display: grid; grid-template-columns: auto 1fr 1.4fr; gap: 8px; margin-top: 10px;
+    display: grid; grid-template-columns: auto 1fr 1.4fr; gap: 8px; margin-top: 6px;
     font-variant-numeric: tabular-nums;
   }
   .suma[hidden] { display: none; }
@@ -236,6 +243,29 @@
     font-size: 14px; font-weight: 600; white-space: nowrap;
   }
   .hg-botones .abrir { background: var(--accent); color: var(--on-accent); }
+
+  /* Elegir hojas para sumarlas */
+  .hoja-guardada.seleccionable { cursor: pointer; }
+  .hoja-guardada.elegida { background: var(--tinte); }
+  .marca {
+    flex-shrink: 0; width: 28px; height: 28px; margin-top: 2px; border-radius: 50%;
+    border: 2px solid var(--line); display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700; color: transparent;
+  }
+  .elegida .marca { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .barra-seleccion {
+    display: flex; gap: 8px; align-items: center;
+    padding: 10px 12px calc(10px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom)));
+    background: var(--surface); border-top: 1px solid var(--line); box-shadow: 0 -4px 16px rgba(0,0,0,.06);
+  }
+  .barra-seleccion[hidden] { display: none; }
+  .barra-seleccion span { flex: 1; min-width: 0; font-size: 14px; color: var(--muted); }
+  .barra-seleccion button {
+    flex-shrink: 0; padding: 11px 14px; border-radius: 10px; font-size: 15px; font-weight: 700;
+    background: var(--surface-2); white-space: nowrap;
+  }
+  .barra-seleccion .principal { background: var(--accent); color: var(--on-accent); }
+  .barra-seleccion .principal:disabled { opacity: .4; cursor: default; }
 
   /* Vista previa del PDF (sin descargarlo) */
   .visor {
@@ -357,14 +387,25 @@
       <button id="volver">← Volver</button>
     </header>
     <div class="sumar-zona" id="sumarZona" hidden>
-      <button class="btn-sumar" id="sumarTodas">∑ Sumar todas las hojas</button>
-      <div class="suma" id="suma" hidden>
-        <div><small>Hojas</small><b id="sumaHojas">0</b></div>
-        <div><small>Pulgadas</small><b id="sumaPulgadas">0</b></div>
-        <div><small>Total</small><b class="din" id="sumaColones">₡0,00</b></div>
+      <div class="sumar-botones">
+        <button class="btn-sumar" id="sumarTodas">∑ Sumar todas</button>
+        <button class="btn-sumar" id="modoSeleccion">☑ Seleccionar</button>
+      </div>
+      <div id="resultadoSuma" hidden>
+        <div class="suma-titulo"><span id="sumaTitulo">Todas las hojas</span><button id="cerrarSuma" aria-label="Cerrar suma">✕</button></div>
+        <div class="suma" id="suma">
+          <div><small>Hojas</small><b id="sumaHojas">0</b></div>
+          <div><small>Pulgadas</small><b id="sumaPulgadas">0</b></div>
+          <div><small>Total</small><b class="din" id="sumaColones">₡0,00</b></div>
+        </div>
       </div>
     </div>
     <div class="lista" id="listaGuardadas"></div>
+    <div class="barra-seleccion" id="barraSeleccion" hidden>
+      <span id="cuentaSeleccion">Toque las hojas que quiere sumar</span>
+      <button id="cancelarSeleccion">Cancelar</button>
+      <button class="principal" id="sumarSeleccion" disabled>Sumar</button>
+    </div>
   </section>
 
 </div>
@@ -710,8 +751,12 @@
       WHERE h.guardada = 1
       GROUP BY h.id
       ORDER BY h.fecha DESC`);
+    guardadasActuales = guardadas;
+    for (const id of [...seleccion]) if (!guardadas.some(h => h.id === id)) seleccion.delete(id);
     $('sumarZona').hidden = guardadas.length === 0;
-    if (!$('suma').hidden) pintarSuma(guardadas);
+    if (guardadas.length === 0) salirDeSeleccion();
+    if (sumaVisible) mostrarSuma(sumaVisible);
+    pintarBarraSeleccion();
     const lista = $('listaGuardadas');
     lista.innerHTML = '';
     if (guardadas.length === 0) {
@@ -721,40 +766,99 @@
     guardadas.forEach(h => {
       const fila = document.createElement('div');
       fila.className = 'hoja-guardada';
-      fila.innerHTML =
-        '<div class="hg-arriba">' +
-          '<div class="info"><b></b><small></small><span class="din"></span></div>' +
-          '<button class="quitar" aria-label="Borrar hoja">✕</button>' +
-        '</div>' +
-        '<div class="hg-botones">' +
-          '<button class="abrir">Abrir</button>' +
-          '<button class="ver">👁 Ver PDF</button>' +
-          '<button class="enviar">📤 Enviar</button>' +
-        '</div>';
+      if (seleccionando) {
+        // Modo seleccionar: tocar la hoja la marca o la desmarca
+        fila.classList.add('seleccionable');
+        fila.classList.toggle('elegida', seleccion.has(h.id));
+        fila.innerHTML =
+          '<div class="hg-arriba">' +
+            '<span class="marca">✓</span>' +
+            '<div class="info"><b></b><small></small><span class="din"></span></div>' +
+          '</div>';
+        fila.onclick = () => {
+          if (seleccion.has(h.id)) seleccion.delete(h.id); else seleccion.add(h.id);
+          fila.classList.toggle('elegida', seleccion.has(h.id));
+          pintarBarraSeleccion();
+          if (sumaVisible === 'seleccion') mostrarSuma('seleccion');
+        };
+      } else {
+        fila.innerHTML =
+          '<div class="hg-arriba">' +
+            '<div class="info"><b></b><small></small><span class="din"></span></div>' +
+            '<button class="quitar" aria-label="Borrar hoja">✕</button>' +
+          '</div>' +
+          '<div class="hg-botones">' +
+            '<button class="abrir">Abrir</button>' +
+            '<button class="ver">👁 Ver PDF</button>' +
+            '<button class="enviar">📤 Enviar</button>' +
+          '</div>';
+      }
       fila.querySelector('b').textContent = h.proveedor || 'Sin proveedor';
       fila.querySelector('small').textContent =
         fechaCorta(h.fecha) + ' · ' + h.piezas + ' pzs · ' + fmt(h.pulgadas) + ' pulg';
       fila.querySelector('.din').textContent = dinero(h.pagar);
-      fila.querySelector('.abrir').onclick = () => abrirGuardada(h.id);
-      fila.querySelector('.ver').onclick = async () => verPDF(await cargarHoja(h.id));
-      fila.querySelector('.enviar').onclick = async () => crearPDF(await cargarHoja(h.id));
-      fila.querySelector('.quitar').onclick = () => borrarGuardada(h.id);
+      if (!seleccionando) {
+        fila.querySelector('.abrir').onclick = () => abrirGuardada(h.id);
+        fila.querySelector('.ver').onclick = async () => verPDF(await cargarHoja(h.id));
+        fila.querySelector('.enviar').onclick = async () => crearPDF(await cargarHoja(h.id));
+        fila.querySelector('.quitar').onclick = () => borrarGuardada(h.id);
+      }
       lista.appendChild(fila);
     });
   }
 
-  // Suma de todas las hojas guardadas: cuántas hojas, cuántas pulgadas y cuántos colones
-  function pintarSuma(guardadas) {
-    $('sumaHojas').textContent = guardadas.length;
-    $('sumaPulgadas').textContent = fmt(guardadas.reduce((s, h) => s + h.pulgadas, 0));
-    $('sumaColones').textContent = dinero(guardadas.reduce((s, h) => s + h.pagar, 0));
+  /* ---------- Sumar hojas: todas o solo las seleccionadas ---------- */
+
+  let guardadasActuales = [];
+  let seleccionando = false;
+  let sumaVisible = null;   // 'todas', 'seleccion' o null
+  const seleccion = new Set();
+
+  const elegidas = () => guardadasActuales.filter(h => seleccion.has(h.id));
+
+  // Cuántas hojas, cuántas pulgadas y cuántos colones
+  function mostrarSuma(tipo) {
+    const hojas = tipo === 'todas' ? guardadasActuales : elegidas();
+    sumaVisible = tipo;
+    $('sumaTitulo').textContent = tipo === 'todas'
+      ? 'Todas las hojas'
+      : (hojas.length === 1 ? '1 hoja seleccionada' : hojas.length + ' hojas seleccionadas');
+    $('sumaHojas').textContent = hojas.length;
+    $('sumaPulgadas').textContent = fmt(hojas.reduce((s, h) => s + h.pulgadas, 0));
+    $('sumaColones').textContent = dinero(hojas.reduce((s, h) => s + h.pagar, 0));
+    $('resultadoSuma').hidden = false;
   }
-  $('sumarTodas').onclick = () => {
-    const ver = $('suma').hidden;
-    $('suma').hidden = !ver;
-    $('sumarTodas').textContent = ver ? 'Ocultar suma' : '∑ Sumar todas las hojas';
-    if (ver) pintarGuardadas();
+  function cerrarSuma() {
+    sumaVisible = null;
+    $('resultadoSuma').hidden = true;
+  }
+
+  function pintarBarraSeleccion() {
+    $('barraSeleccion').hidden = !seleccionando;
+    $('modoSeleccion').classList.toggle('activo', seleccionando);
+    $('modoSeleccion').textContent = seleccionando ? '☑ Seleccionando' : '☑ Seleccionar';
+    const n = seleccion.size;
+    $('cuentaSeleccion').textContent = n === 0
+      ? 'Toque las hojas que quiere sumar'
+      : (n === 1 ? '1 hoja' : n + ' hojas') + ' · ' + fmt(elegidas().reduce((s, h) => s + h.pulgadas, 0)) + ' pulg';
+    $('sumarSeleccion').disabled = n === 0;
+    $('sumarSeleccion').textContent = n === 0 ? 'Sumar' : 'Sumar (' + n + ')';
+  }
+
+  function salirDeSeleccion() {
+    seleccionando = false;
+    seleccion.clear();
+    if (sumaVisible === 'seleccion') cerrarSuma();
+  }
+
+  $('sumarTodas').onclick = () => mostrarSuma('todas');
+  $('cerrarSuma').onclick = cerrarSuma;
+  $('modoSeleccion').onclick = () => {
+    if (seleccionando) salirDeSeleccion(); else seleccionando = true;
+    pintarGuardadas();
   };
+  $('cancelarSeleccion').onclick = () => { salirDeSeleccion(); pintarGuardadas(); };
+  $('sumarSeleccion').onclick = () => mostrarSuma('seleccion');
 
   async function borrarGuardada(id) {
     const completa = await cargarHoja(id);
@@ -783,7 +887,7 @@
     if (id === 'vistaHoja') pintarHoja(); else pintarGuardadas();
   }
   $('irGuardadas').onclick = () => mostrar('vistaGuardadas');
-  $('volver').onclick = () => mostrar('vistaHoja');
+  $('volver').onclick = () => { salirDeSeleccion(); mostrar('vistaHoja'); };
 
   /* ---------- PDF ---------- */
 
@@ -997,7 +1101,8 @@
     App.addListener('backButton', () => {
       if (!$('menuPdf').hidden) cerrarMenuPdf();
       else if (!$('visor').hidden) cerrarVisor();
-      else if ($('vistaGuardadas').classList.contains('activa')) mostrar('vistaHoja');
+      else if (seleccionando) { salirDeSeleccion(); pintarGuardadas(); }
+      else if ($('vistaGuardadas').classList.contains('activa')) { salirDeSeleccion(); mostrar('vistaHoja'); }
       else App.exitApp();
     });
   }
