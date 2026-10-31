@@ -1,14 +1,10 @@
 {
-  "name": "app",
+  "name": "medir-madera",
   "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "App de Android para medir madera: pulgadas, precio y hoja en PDF",
   "dependencies": {
     "@capacitor-community/sqlite": "^8.1.1",
     "@capacitor/android": "^8.6.0",
