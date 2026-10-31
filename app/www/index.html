@@ -3,49 +3,51 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#7a4a1e">
+<meta name="theme-color" content="#16804f">
 <title>Medir Madera</title>
 <style>
   :root {
-    --bg: #f4efe8;
+    --bg: #f1f6f2;
     --surface: #ffffff;
-    --surface-2: #ece4d9;
-    --text: #231a12;
-    --muted: #806f5f;
-    --line: #e2d7c9;
-    --accent: #7a4a1e;
-    --accent-2: #a8692e;
+    --surface-2: #e2eee5;
+    --text: #15241a;
+    --muted: #5c7364;
+    --line: #d5e4d9;
+    --accent: #16804f;
+    --accent-2: #1f9a60;
     --on-accent: #ffffff;
-    --anillo: rgba(168, 105, 46, .28);
-    --tinte: #fbf3e8;
-    --seleccion: #f3d9b4;
+    --barra: linear-gradient(135deg, #0f6b41 0%, #1c9a5e 100%);
+    --anillo: rgba(31, 154, 96, .25);
+    --tinte: #ecf8f0;
+    --seleccion: #bfeccf;
     --key: #ffffff;
-    --key-press: #e6dccf;
-    --danger: #b3261e;
-    --danger-bg: #fbe9e7;
-    --flash: #fff1d6;
-    --dinero: #2e6b34;
+    --key-press: #dcebe0;
+    --danger: #c0392b;
+    --danger-bg: #fdecea;
+    --flash: #dff6e7;
+    --dinero: #0f6b41;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #17120d;
-      --surface: #221b14;
-      --surface-2: #2e251c;
-      --text: #f3ebe1;
-      --muted: #a8988a;
-      --line: #3a3026;
-      --accent: #c98a4b;
-      --accent-2: #e0a568;
-      --on-accent: #1a120a;
-      --anillo: rgba(224, 165, 104, .30);
-      --tinte: #2c2219;
-      --seleccion: #6b4a26;
-      --key: #2b231b;
-      --key-press: #3a3026;
+      --bg: #0d1611;
+      --surface: #14211a;
+      --surface-2: #1d2e24;
+      --text: #e6f3ea;
+      --muted: #91a99a;
+      --line: #263a2e;
+      --accent: #3ed18a;
+      --accent-2: #66e0a4;
+      --on-accent: #052014;
+      --barra: linear-gradient(135deg, #0f5c39 0%, #17804f 100%);
+      --anillo: rgba(62, 209, 138, .28);
+      --tinte: #15291e;
+      --seleccion: #1c5c3a;
+      --key: #172720;
+      --key-press: #22382c;
       --danger: #ff8a80;
       --danger-bg: #3a2220;
-      --flash: #3d2e1c;
-      --dinero: #8fd394;
+      --flash: #1b3a28;
+      --dinero: #6fe3a5;
     }
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -72,7 +74,7 @@
   .barra {
     display: flex; align-items: center; justify-content: space-between; gap: 8px;
     padding: calc(10px + var(--safe-area-inset-top, env(safe-area-inset-top))) 12px 10px 16px;
-    background: var(--accent); color: var(--on-accent);
+    background: var(--barra); color: #ffffff;
   }
   .barra h1 {
     font-size: 18px; margin: 0; font-weight: 700; white-space: nowrap;
@@ -80,10 +82,10 @@
   }
   .barra-botones { display: flex; gap: 6px; flex-shrink: 0; }
   .barra button {
-    flex-shrink: 0; color: var(--on-accent); padding: 8px 12px; border-radius: 999px;
-    background: rgba(255,255,255,.16); font-size: 15px; font-weight: 600; white-space: nowrap;
+    flex-shrink: 0; color: #ffffff; padding: 8px 12px; border-radius: 999px;
+    background: rgba(255,255,255,.18); font-size: 15px; font-weight: 600; white-space: nowrap;
   }
-  .barra button.principal { background: var(--on-accent); color: var(--accent); }
+  .barra button.principal { background: #ffffff; color: #0f6b41; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
   .barra button:disabled { opacity: .4; cursor: default; }
 
   /* Proveedor y totales (en la esquina) */
@@ -269,7 +271,7 @@
 
   /* Vista previa del PDF (sin descargarlo) */
   .visor {
-    position: fixed; inset: 0; z-index: 15; background: #5b5148;
+    position: fixed; inset: 0; z-index: 15; background: #3d4c43;
     display: flex; flex-direction: column;
   }
   .visor[hidden] { display: none; }
@@ -281,7 +283,7 @@
     display: block; width: 100%; margin: 0 auto 12px; background: #fff;
     box-shadow: 0 2px 10px rgba(0,0,0,.35);
   }
-  .visor-paginas .vacio { color: #f3ebe1; }
+  .visor-paginas .vacio { color: #e6f3ea; }
   .visor-pie {
     display: grid; grid-template-columns: 1fr; padding: 10px 12px calc(10px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom)));
     background: var(--surface);
@@ -299,9 +301,9 @@
     transition: transform .2s; max-width: calc(100% - 32px); z-index: 10;
   }
   .aviso.ver { transform: translate(-50%, 0); }
-  .aviso button { color: var(--accent-2); font-weight: 700; }
+  .aviso button { color: #6fe3a5; font-weight: 700; }
   .aviso button:empty { display: none; }
-  @media (prefers-color-scheme: dark) { .aviso button { color: var(--accent); } }
+  @media (prefers-color-scheme: dark) { .aviso button { color: #0f6b41; } }
   .aviso span { white-space: nowrap; }
 
   /* Menú del PDF */
@@ -944,7 +946,7 @@
       doc.text(h.proveedor || '', xNombre, 34.5);
 
       y = 44;
-      doc.setFillColor(235, 228, 218);
+      doc.setFillColor(222, 240, 228);
       doc.rect(izq, y, der - izq, fila, 'FD');
       doc.setFont('DejaVu', 'bold'); doc.setFontSize(9);
       cols.forEach(c => texto(c.t, c, y + 5.5));
