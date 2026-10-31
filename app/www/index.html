@@ -16,9 +16,13 @@
     --accent: #7a4a1e;
     --accent-2: #a8692e;
     --on-accent: #ffffff;
+    --anillo: rgba(168, 105, 46, .28);
+    --tinte: #fbf3e8;
+    --seleccion: #f3d9b4;
     --key: #ffffff;
     --key-press: #e6dccf;
     --danger: #b3261e;
+    --danger-bg: #fbe9e7;
     --flash: #fff1d6;
     --dinero: #2e6b34;
   }
@@ -33,9 +37,13 @@
       --accent: #c98a4b;
       --accent-2: #e0a568;
       --on-accent: #1a120a;
+      --anillo: rgba(224, 165, 104, .30);
+      --tinte: #2c2219;
+      --seleccion: #6b4a26;
       --key: #2b231b;
       --key-press: #3a3026;
       --danger: #ff8a80;
+      --danger-bg: #3a2220;
       --flash: #3d2e1c;
       --dinero: #8fd394;
     }
@@ -62,61 +70,56 @@
   /* Barra de arriba */
   .barra {
     display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    padding: calc(12px + var(--safe-area-inset-top, env(safe-area-inset-top))) 16px 12px;
+    padding: calc(10px + var(--safe-area-inset-top, env(safe-area-inset-top))) 12px 10px 16px;
     background: var(--accent); color: var(--on-accent);
   }
-  .barra h1 { font-size: 19px; margin: 0; font-weight: 700; }
+  .barra h1 { font-size: 18px; margin: 0; font-weight: 700; white-space: nowrap; }
+  .barra-botones { display: flex; gap: 6px; }
   .barra button {
     color: var(--on-accent); padding: 8px 12px; border-radius: 999px;
     background: rgba(255,255,255,.16); font-size: 15px; font-weight: 600;
   }
+  .barra button.principal { background: var(--on-accent); color: var(--accent); }
+  .barra button:disabled { opacity: .4; cursor: default; }
 
-  /* Resumen */
+  /* Proveedor y totales (en la esquina) */
   .resumen {
-    padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--line);
   }
+  .resumen-izq { flex: 1; min-width: 0; }
   .proveedor {
-    width: 100%; font-size: 17px; font-weight: 600; color: var(--text);
+    width: 100%; font-size: 16px; font-weight: 600; color: var(--text);
     border: 0; border-bottom: 1px dashed var(--line); background: transparent;
     padding: 4px 0; outline: none;
   }
   .proveedor:focus { border-bottom-color: var(--accent); }
   .proveedor::placeholder { color: var(--muted); font-weight: 400; }
-  .estado { font-size: 12px; color: var(--muted); margin-top: 4px; min-height: 15px; }
-  .cifras { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 4px; }
-  .cifra small { display: block; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
-  .cifra b { font-size: 30px; font-variant-numeric: tabular-nums; color: var(--dinero); }
-  .cifra.der { text-align: right; font-size: 15px; font-variant-numeric: tabular-nums; }
-  .cifra.der b { font-size: 18px; color: var(--text); }
-  .precios {
-    margin-top: 8px; width: 100%; text-align: left; font-size: 13px; color: var(--muted);
-    padding: 6px 10px; border-radius: 8px; background: var(--bg);
-  }
-  .precios b { color: var(--text); }
-  .acciones { display: flex; gap: 8px; margin-top: 10px; }
-  .acciones button {
-    flex: 1; padding: 12px; border-radius: 10px;
-    background: var(--surface-2); font-weight: 600; font-size: 16px;
-  }
-  .acciones button:disabled { opacity: .45; cursor: default; }
-  .acciones .pdf { flex: 0 0 auto; padding: 12px 16px; }
+  .estado { font-size: 12px; color: var(--muted); margin-top: 4px; display: flex; gap: 8px; align-items: center; }
+  .estado:empty { display: none; }
+  .estado button { color: var(--accent); font-weight: 700; font-size: 12px; padding: 2px 0; }
+  .totales { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .totales b { display: block; font-size: 17px; color: var(--dinero); }
+  .totales span { font-size: 12px; color: var(--muted); }
 
-  /* Lista de piezas */
+  /* Desglose: la última pieza sale arriba */
   .lista { flex: 1; overflow-y: auto; min-height: 0; }
   .pieza {
-    display: grid; grid-template-columns: 26px 1fr auto auto 36px; gap: 10px; align-items: center;
-    padding: 0 6px 0 14px; height: 50px; border-bottom: 1px solid var(--line);
+    display: grid; grid-template-columns: 28px 1fr auto auto 40px; gap: 10px; align-items: center;
+    padding: 0 8px 0 16px; height: 52px; border-bottom: 1px solid var(--line);
     font-variant-numeric: tabular-nums;
   }
-  .pieza.nueva { animation: flash 1.2s ease-out; }
+  .pieza.nueva { animation: flash 1.4s ease-out; }
   @keyframes flash { from { background: var(--flash); } to { background: transparent; } }
   .pieza .n { color: var(--muted); font-size: 13px; }
-  .pieza .m { font-size: 18px; }
-  .pieza .r { font-size: 18px; font-weight: 700; text-align: right; }
-  .pieza .imp { font-size: 14px; color: var(--dinero); text-align: right; min-width: 72px; }
-  .pieza .imp small { display: block; color: var(--muted); font-size: 11px; }
-  .pieza button { color: var(--muted); font-size: 18px; height: 40px; border-radius: 8px; }
-  .pieza button:active { background: var(--surface-2); color: var(--danger); }
+  .pieza .m { font-size: 19px; font-weight: 600; }
+  .pieza .r { font-size: 17px; text-align: right; }
+  .pieza .r small { font-size: 11px; color: var(--muted); margin-left: 2px; }
+  .pieza .imp { font-size: 14px; color: var(--dinero); text-align: right; min-width: 74px; }
+  .pieza button {
+    width: 36px; height: 36px; border-radius: 50%; justify-self: end;
+    background: var(--danger-bg); color: var(--danger); font-size: 15px; font-weight: 700;
+  }
   .vacio { color: var(--muted); text-align: center; padding: 32px 24px; line-height: 1.5; }
 
   /* Panel de captura */
@@ -127,15 +130,31 @@
   }
   .campos { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; }
   .campo {
-    text-align: left; padding: 6px 12px; border-radius: 10px;
-    border: 2px solid var(--line); background: var(--bg);
+    text-align: left; padding: 6px 12px; border-radius: 12px;
+    border: 2px solid var(--line); background: var(--bg); opacity: .75;
+    transition: box-shadow .15s, border-color .15s, background .15s;
   }
-  .campo.activo { border-color: var(--accent); background: var(--surface); }
+  .campo.activo {
+    opacity: 1; border: 3px solid var(--accent); background: var(--tinte);
+    box-shadow: 0 0 0 5px var(--anillo); padding: 5px 11px;
+  }
   .campo small { display: block; font-size: 12px; color: var(--muted); }
-  .campo span { display: block; font-size: 26px; font-weight: 700; min-height: 32px; font-variant-numeric: tabular-nums; }
-  .campo span:empty::after { content: "–"; color: var(--line); }
+  .campo.activo small { color: var(--accent); font-weight: 700; }
+  .valor {
+    display: inline-block; font-size: 28px; font-weight: 700; min-height: 34px; line-height: 34px;
+    font-variant-numeric: tabular-nums; border-radius: 6px; padding: 0 2px;
+  }
+  .campo:not(.activo) .valor:empty::after { content: "–"; color: var(--line); }
+  /* Cursor que parpadea en la casilla donde se está escribiendo */
+  .campo.activo:not(.reemplazar) .valor::after {
+    content: ""; display: inline-block; width: 2px; height: 26px; margin-left: 2px;
+    background: var(--accent); vertical-align: -3px; animation: parpadeo 1s steps(1) infinite;
+  }
+  @keyframes parpadeo { 50% { opacity: 0; } }
+  /* Al tocar una casilla con número, el número queda marcado: lo que se escriba lo reemplaza */
+  .campo.reemplazar .valor { background: var(--seleccion); }
   .por { font-size: 22px; color: var(--muted); }
-  .formula { text-align: center; color: var(--muted); font-size: 14px; height: 24px; line-height: 24px; }
+  .formula { text-align: center; color: var(--muted); font-size: 14px; height: 26px; line-height: 26px; }
   .formula b { color: var(--text); font-size: 16px; }
 
   .rapidos { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; font-size: 13px; color: var(--muted); }
@@ -160,8 +179,23 @@
   .teclado .agregar:active { background: var(--accent-2); }
 
   /* Hojas guardadas */
+  .sumar-zona { padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .sumar-zona[hidden] { display: none; }
+  .btn-sumar {
+    width: 100%; padding: 12px; border-radius: 10px; font-size: 16px; font-weight: 700;
+    background: var(--surface-2);
+  }
+  .suma {
+    display: grid; grid-template-columns: auto 1fr 1.4fr; gap: 8px; margin-top: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+  .suma[hidden] { display: none; }
+  .suma div { background: var(--bg); border-radius: 10px; padding: 8px 10px; }
+  .suma small { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .suma b { font-size: 18px; }
+  .suma .din { color: var(--dinero); }
   .hoja-guardada {
-    display: flex; align-items: center; gap: 6px; padding: 10px 6px 10px 16px;
+    display: flex; align-items: center; gap: 6px; padding: 10px 8px 10px 16px;
     border-bottom: 1px solid var(--line); background: var(--surface);
   }
   .hoja-guardada .info { flex: 1; text-align: left; min-width: 0; }
@@ -171,7 +205,10 @@
   .hoja-guardada .pdf {
     padding: 8px 10px; border-radius: 8px; background: var(--surface-2); font-size: 14px; font-weight: 600;
   }
-  .hoja-guardada .quitar { color: var(--muted); width: 36px; height: 40px; border-radius: 8px; font-size: 18px; }
+  .hoja-guardada .quitar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--danger-bg); color: var(--danger); font-size: 15px; font-weight: 700;
+  }
 
   /* Aviso con deshacer */
   .aviso {
@@ -218,20 +255,20 @@
   <section class="vista" id="vistaHoja">
     <header class="barra">
       <h1>🪵 Medir Madera</h1>
-      <button id="irGuardadas">Guardadas</button>
+      <div class="barra-botones">
+        <button class="principal" id="guardar">Guardar</button>
+        <button id="irGuardadas">Guardadas</button>
+      </div>
     </header>
 
     <div class="resumen">
-      <input class="proveedor" id="proveedor" placeholder="Proveedor (toca para escribir)" autocomplete="off">
-      <div class="estado" id="estado"></div>
-      <div class="cifras">
-        <div class="cifra"><small>A pagar</small><b id="pagar">$0</b></div>
-        <div class="cifra der">Total <b id="total">0</b><br><span id="piezas">0</span> piezas</div>
+      <div class="resumen-izq">
+        <input class="proveedor" id="proveedor" placeholder="Proveedor" autocomplete="off">
+        <div class="estado" id="estado"></div>
       </div>
-      <button class="precios" id="precios"></button>
-      <div class="acciones">
-        <button class="pdf" id="pdfActual" hidden>📄 PDF</button>
-        <button id="guardar">Guardar hoja y empezar otra</button>
+      <div class="totales">
+        <b id="pagar">₡0,00</b>
+        <span><span id="total">0</span> pulg · <span id="piezas">0</span> pzs</span>
       </div>
     </div>
 
@@ -239,13 +276,14 @@
 
     <div class="captura">
       <div class="campos">
-        <button class="campo activo" id="campoA"><small>Medida</small><span id="valA"></span></button>
+        <button class="campo activo" id="campoA"><small>Medida</small><span class="valor" id="valA"></span></button>
         <div class="por">×</div>
-        <button class="campo" id="campoB"><small>Largo</small><span id="valB"></span></button>
+        <button class="campo" id="campoB"><small>Largo</small><span class="valor" id="valB"></span></button>
       </div>
       <div class="formula" id="formula"></div>
       <div class="rapidos">
         <span>Largo:</span>
+        <button data-largo="2">2</button>
         <button data-largo="3">3</button>
         <button data-largo="4">4</button>
         <button data-largo="5">5</button>
@@ -267,6 +305,14 @@
       <h1>Hojas guardadas</h1>
       <button id="volver">← Volver</button>
     </header>
+    <div class="sumar-zona" id="sumarZona" hidden>
+      <button class="btn-sumar" id="sumarTodas">∑ Sumar todas las hojas</button>
+      <div class="suma" id="suma" hidden>
+        <div><small>Hojas</small><b id="sumaHojas">0</b></div>
+        <div><small>Pulgadas</small><b id="sumaPulgadas">0</b></div>
+        <div><small>Total</small><b class="din" id="sumaColones">₡0,00</b></div>
+      </div>
+    </div>
     <div class="lista" id="listaGuardadas"></div>
   </section>
 
@@ -412,6 +458,7 @@
   let hoja;
   let entrada = { a: '', b: '4' };
   let campo = 'a';
+  let reemplazar = false;
 
   const importe = f => calcular(f.a, f.b) * f.p;
   const totalDe = h => h.filas.reduce((s, f) => s + calcular(f.a, f.b), 0);
@@ -419,35 +466,40 @@
 
   function pintarHoja(resaltarUltima) {
     $('proveedor').value = hoja.proveedor;
-    $('estado').textContent = hoja.guardada ? 'Hoja guardada · los cambios se guardan solos' : '';
     $('total').textContent = fmt(totalDe(hoja));
     $('pagar').textContent = dinero(pagarDe(hoja));
     $('piezas').textContent = hoja.filas.length;
-    $('precios').innerHTML = 'Precio: hasta 8 → <b>' + dinero(precios.bajo) + '</b> · de 9 para arriba → <b>' +
-      dinero(precios.alto) + '</b> ✎';
     $('guardar').disabled = hoja.filas.length === 0;
-    $('guardar').textContent = hoja.guardada ? 'Listo, empezar otra' : 'Guardar hoja y empezar otra';
-    $('pdfActual').hidden = !hoja.guardada;
+    $('guardar').textContent = hoja.guardada ? 'Listo' : 'Guardar';
 
+    const estado = $('estado');
+    estado.innerHTML = '';
+    if (hoja.guardada) {
+      estado.innerHTML = '<span>Hoja guardada</span><button id="pdfActual">📄 PDF</button>';
+      $('pdfActual').onclick = () => crearPDF(hoja);
+    }
+
+    // Desglose: la última pieza sale de primera, para ver y borrar rápido si hubo un error
     const lista = $('lista');
     lista.innerHTML = '';
     if (hoja.filas.length === 0) {
-      lista.innerHTML = '<div class="vacio">Escribe la medida y el largo con el teclado de abajo y toca <b>Agregar</b>.</div>';
+      lista.innerHTML = '<div class="vacio">Escribe la medida y el largo con el teclado de abajo y toca <b>Agregar</b>.<br>Aquí van saliendo las piezas.</div>';
       return;
     }
-    hoja.filas.forEach((f, i) => {
+    for (let i = hoja.filas.length - 1; i >= 0; i--) {
+      const f = hoja.filas[i];
       const fila = document.createElement('div');
       fila.className = 'pieza' + (resaltarUltima && i === hoja.filas.length - 1 ? ' nueva' : '');
       fila.innerHTML =
         '<span class="n">' + String(i + 1).padStart(2, '0') + '</span>' +
         '<span class="m">' + fmt(f.a) + ' × ' + fmt(f.b) + '</span>' +
-        '<span class="r">' + fmt(calcular(f.a, f.b)) + '</span>' +
-        '<span class="imp">' + dinero(importe(f)) + '<small>a ' + dinero(f.p) + '</small></span>' +
-        '<button aria-label="Quitar pieza">✕</button>';
+        '<span class="r">' + fmt(calcular(f.a, f.b)) + '<small>pulg</small></span>' +
+        '<span class="imp">' + dinero(importe(f)) + '</span>' +
+        '<button aria-label="Borrar pieza">✕</button>';
       fila.querySelector('button').onclick = () => quitarPieza(i);
       lista.appendChild(fila);
-    });
-    if (resaltarUltima) lista.scrollTop = lista.scrollHeight;
+    }
+    if (resaltarUltima) lista.scrollTop = 0;
   }
 
   async function quitarPieza(i) {
@@ -455,37 +507,12 @@
     pintarHoja();
     await ejecutar('DELETE FROM piezas WHERE id = ?', [quitada.id]);
     const h = hoja;
-    avisar('Pieza ' + fmt(quitada.a) + ' × ' + fmt(quitada.b) + ' quitada', async () => {
+    avisar('Pieza ' + fmt(quitada.a) + ' × ' + fmt(quitada.b) + ' borrada', async () => {
       await ejecutar('INSERT INTO piezas (id, hoja_id, medida, largo, precio) VALUES (?, ?, ?, ?, ?)',
         [quitada.id, h.id, quitada.a, quitada.b, quitada.p]);
       h.filas.splice(i, 0, quitada);
       if (h === hoja) pintarHoja();
     });
-  }
-
-  $('precios').onclick = async () => {
-    const bajo = pedirPrecio('Precio de las de 8 para abajo:', precios.bajo);
-    if (bajo === null) return;
-    const alto = pedirPrecio('Precio de las de 9 para arriba:', precios.alto);
-    if (alto === null) return;
-    precios = { bajo, alto };
-    await fijarAjuste('precio_bajo', bajo);
-    await fijarAjuste('precio_alto', alto);
-    // La hoja que se está llenando toma el precio nuevo; las guardadas se quedan como estaban
-    if (!hoja.guardada) {
-      for (const f of hoja.filas) f.p = precioPara(f.a);
-      await ejecutar('UPDATE piezas SET precio = CASE WHEN medida <= 8 THEN ? ELSE ? END WHERE hoja_id = ?',
-        [bajo, alto, hoja.id]);
-    }
-    pintarHoja();
-  };
-
-  function pedirPrecio(texto, actual) {
-    const r = prompt(texto, actual);
-    if (r === null) return null;
-    const n = parseFloat(r.replace(',', '.'));
-    if (!(n >= 0)) { alert('Ese precio no es válido.'); return null; }
-    return n;
   }
 
   /* ---------- Captura ---------- */
@@ -495,22 +522,33 @@
     $('valB').textContent = entrada.b;
     $('campoA').classList.toggle('activo', campo === 'a');
     $('campoB').classList.toggle('activo', campo === 'b');
+    $('campoA').classList.toggle('reemplazar', reemplazar && campo === 'a');
+    $('campoB').classList.toggle('reemplazar', reemplazar && campo === 'b');
     document.querySelectorAll('[data-largo]').forEach(b =>
       b.classList.toggle('sel', b.dataset.largo === entrada.b));
     document.querySelector('[data-k="."]').disabled = campo === 'a';
     const a = parseFloat(entrada.a), b = parseFloat(entrada.b);
     $('formula').innerHTML = (a > 0 && b > 0)
-      ? fmt(a) + ' × ' + fmt(a) + ' × ' + fmt(b) + ' ÷ 4 = <b>' + fmt(calcular(a, b)) + '</b> · ' +
+      ? fmt(a) + ' × ' + fmt(a) + ' × ' + fmt(b) + ' ÷ 4 = <b>' + fmt(calcular(a, b)) + ' pulg</b> · ' +
         dinero(calcular(a, b) * precioPara(a))
       : '';
   }
 
+  // Al tocar una casilla que ya tiene número, lo próximo que se escriba lo reemplaza (no se pega al lado)
+  function elegirCampo(c) {
+    campo = c;
+    reemplazar = entrada[c] !== '';
+    pintarEntrada();
+  }
+
   function tecla(k) {
     if (k === 'agregar') return agregar();
-    let v = entrada[campo];
-    if (k === 'borrar') v = v.slice(0, -1);
     // La medida de la tuca siempre es entera; solo el largo acepta decimales
-    else if (k === '.') { if (campo === 'a') return; if (!v.includes('.')) v = (v || '0') + '.'; }
+    if (k === '.' && campo === 'a') return;
+    let v = reemplazar ? '' : entrada[campo];
+    reemplazar = false;
+    if (k === 'borrar') v = v.slice(0, -1);
+    else if (k === '.') { if (!v.includes('.')) v = (v || '0') + '.'; }
     else if (v.length < 6) v = (v === '0' ? '' : v) + k;
     entrada[campo] = v;
     pintarEntrada();
@@ -518,12 +556,13 @@
 
   async function agregar() {
     const a = parseFloat(entrada.a), b = parseFloat(entrada.b);
-    if (!(a > 0)) { campo = 'a'; pintarEntrada(); return; }
-    if (!(b > 0)) { campo = 'b'; pintarEntrada(); return; }
+    if (!(a > 0)) { elegirCampo('a'); return; }
+    if (!(b > 0)) { elegirCampo('b'); return; }
     const p = precioPara(a);
     // El largo casi siempre se repite, así que se queda puesto
     entrada.a = '';
     campo = 'a';
+    reemplazar = false;
     pintarEntrada();
     const id = await ejecutar('INSERT INTO piezas (hoja_id, medida, largo, precio) VALUES (?, ?, ?, ?)',
       [hoja.id, a, b, p]);
@@ -532,11 +571,12 @@
   }
 
   $('teclado').onclick = e => { const b = e.target.closest('button'); if (b) tecla(b.dataset.k); };
-  $('campoA').onclick = () => { campo = 'a'; pintarEntrada(); };
-  $('campoB').onclick = () => { campo = 'b'; pintarEntrada(); };
+  $('campoA').onclick = () => elegirCampo('a');
+  $('campoB').onclick = () => elegirCampo('b');
   document.querySelectorAll('[data-largo]').forEach(b => b.onclick = () => {
     entrada.b = b.dataset.largo;
     campo = 'a';
+    reemplazar = false;
     pintarEntrada();
   });
 
@@ -552,7 +592,7 @@
     else if (e.key === 'Backspace') tecla('borrar');
     else if (e.key === 'Enter') { e.preventDefault(); tecla('agregar'); }
     else if (e.key === 'x' || e.key === '*' || e.key === 'Tab') {
-      e.preventDefault(); campo = campo === 'a' ? 'b' : 'a'; pintarEntrada();
+      e.preventDefault(); elegirCampo(campo === 'a' ? 'b' : 'a');
     }
   });
 
@@ -588,8 +628,6 @@
     });
   };
 
-  $('pdfActual').onclick = () => crearPDF(hoja);
-
   function fechaCorta(iso) {
     const d = new Date(iso);
     return isNaN(d) ? '' : d.toLocaleDateString('es', { day: 'numeric', month: 'short' }) +
@@ -600,11 +638,14 @@
     const guardadas = await consulta(`
       SELECT h.id, h.proveedor, h.fecha,
              COUNT(p.id) AS piezas,
+             COALESCE(SUM(p.medida * p.medida * p.largo / 4), 0) AS pulgadas,
              COALESCE(SUM(p.medida * p.medida * p.largo / 4 * p.precio), 0) AS pagar
       FROM hojas h LEFT JOIN piezas p ON p.hoja_id = h.id
       WHERE h.guardada = 1
       GROUP BY h.id
       ORDER BY h.fecha DESC`);
+    $('sumarZona').hidden = guardadas.length === 0;
+    if (!$('suma').hidden) pintarSuma(guardadas);
     const lista = $('listaGuardadas');
     lista.innerHTML = '';
     if (guardadas.length === 0) {
@@ -619,7 +660,8 @@
         '<button class="pdf">📄 PDF</button>' +
         '<button class="quitar" aria-label="Borrar hoja">✕</button>';
       fila.querySelector('b').textContent = h.proveedor || 'Sin proveedor';
-      fila.querySelector('small').textContent = fechaCorta(h.fecha) + ' · ' + h.piezas + ' piezas';
+      fila.querySelector('small').textContent =
+        fechaCorta(h.fecha) + ' · ' + h.piezas + ' pzs · ' + fmt(h.pulgadas) + ' pulg';
       fila.querySelector('.din').textContent = dinero(h.pagar);
       fila.querySelector('.info').onclick = () => abrirGuardada(h.id);
       fila.querySelector('.pdf').onclick = async () => crearPDF(await cargarHoja(h.id));
@@ -627,6 +669,19 @@
       lista.appendChild(fila);
     });
   }
+
+  // Suma de todas las hojas guardadas: cuántas hojas, cuántas pulgadas y cuántos colones
+  function pintarSuma(guardadas) {
+    $('sumaHojas').textContent = guardadas.length;
+    $('sumaPulgadas').textContent = fmt(guardadas.reduce((s, h) => s + h.pulgadas, 0));
+    $('sumaColones').textContent = dinero(guardadas.reduce((s, h) => s + h.pagar, 0));
+  }
+  $('sumarTodas').onclick = () => {
+    const ver = $('suma').hidden;
+    $('suma').hidden = !ver;
+    $('sumarTodas').textContent = ver ? 'Ocultar suma' : '∑ Sumar todas las hojas';
+    if (ver) pintarGuardadas();
+  };
 
   async function borrarGuardada(id) {
     const completa = await cargarHoja(id);
