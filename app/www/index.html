@@ -684,7 +684,7 @@
     const cols = [
       { t: 'No.', x: izq, w: 14, al: 'center' },
       { t: 'MEDIDA', x: izq + 14, w: 50, al: 'center' },
-      { t: 'RESULTADO', x: izq + 64, w: 42, al: 'right' },
+      { t: 'PULGADAS', x: izq + 64, w: 42, al: 'right' },
       { t: 'PRECIO', x: izq + 106, w: 32, al: 'right' },
       { t: 'IMPORTE', x: izq + 138, w: 47, al: 'right' },
     ];
@@ -735,42 +735,22 @@
     });
 
     // Totales
-    if (y + 36 > alto) { doc.addPage(); encabezado(++pagina); }
-    y += 6;
-    const cajaY = y;
-    const grupos = {};
-    h.filas.forEach(f => {
-      const g = grupos[f.p] || (grupos[f.p] = { piezas: 0, total: 0 });
-      g.piezas++; g.total += calcular(f.a, f.b);
-    });
-    doc.setFontSize(10);
-    Object.keys(grupos).map(Number).sort((a, b) => a - b).forEach(p => {
-      const g = grupos[p];
-      doc.text(g.piezas + ' piezas a ' + dinero(p) + ':  ' + fmt(g.total) + ' x ' + dinero(p) + ' = ' +
-        dinero(g.total * p), izq, y);
-      y += 6;
-    });
-
-    const cajaX = izq + 106;
+    if (y + 34 > alto) { doc.addPage(); encabezado(++pagina); }
+    const cajaX = izq + 106, cajaY = y + 6;
     doc.setLineWidth(0.4);
-    doc.rect(cajaX, cajaY - 5, der - cajaX, 22);
+    doc.rect(cajaX, cajaY, der - cajaX, 28);
+    doc.setFont('DejaVu', 'normal'); doc.setFontSize(10);
+    doc.text('Piezas', cajaX + 3, cajaY + 6.5);
+    doc.text(String(h.filas.length), der - 3, cajaY + 6.5, { align: 'right' });
+    doc.text('Total de pulgadas', cajaX + 3, cajaY + 13);
+    doc.setFont('DejaVu', 'bold');
+    doc.text(fmt(totalDe(h)), der - 3, cajaY + 13, { align: 'right' });
+    doc.setLineWidth(0.2);
+    doc.line(cajaX, cajaY + 16, der, cajaY + 16);
     doc.setFontSize(10);
-    doc.text('Piezas: ' + h.filas.length, cajaX + 3, cajaY + 1);
-    doc.text('Total: ' + fmt(totalDe(h)), der - 3, cajaY + 1, { align: 'right' });
-    doc.setFont('DejaVu', 'bold'); doc.setFontSize(10);
-    doc.text('A PAGAR:', cajaX + 3, cajaY + 12);
+    doc.text('A PAGAR', cajaX + 3, cajaY + 24);
     doc.setFontSize(15);
-    doc.text(dinero(pagarDe(h)), der - 3, cajaY + 12.5, { align: 'right' });
-
-    // Firmas
-    const yf = Math.max(y + 30, cajaY + 45);
-    if (yf < alto - 5) {
-      doc.setFont('DejaVu', 'normal'); doc.setFontSize(9); doc.setLineWidth(0.2);
-      doc.line(izq + 5, yf, izq + 75, yf);
-      doc.line(der - 75, yf, der - 5, yf);
-      doc.text('Recibió', izq + 40, yf + 5, { align: 'center' });
-      doc.text('Entregó (proveedor)', der - 40, yf + 5, { align: 'center' });
-    }
+    doc.text(dinero(pagarDe(h)), der - 3, cajaY + 24.5, { align: 'right' });
     return doc;
   }
 
