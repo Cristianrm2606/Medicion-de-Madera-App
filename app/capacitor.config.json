@@ -1,6 +1,6 @@
 ﻿{
   "appId": "com.madera.hoja",
-  "appName": "Hoja de Madera",
+  "appName": "Medir Madera",
   "webDir": "www",
   "plugins": {
     "CapacitorSQLite": { "androidIsEncryption": false },

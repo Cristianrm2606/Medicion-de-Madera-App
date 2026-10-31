@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Hoja de Madera</string>
-    <string name="title_activity_main">Hoja de Madera</string>
+    <string name="app_name">Medir Madera</string>
+    <string name="title_activity_main">Medir Madera</string>
     <string name="package_name">com.madera.hoja</string>
     <string name="custom_url_scheme">com.madera.hoja</string>
 </resources>
